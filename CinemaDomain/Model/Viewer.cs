@@ -3,10 +3,8 @@ using System.Collections.Generic;
 
 namespace CinemaDomain.Model;
 
-public partial class Viewer
+public partial class Viewer: Entity
 {
-    public int Id { get; set; }
-
     public string Name { get; set; } = null!;
 
     public DateOnly DateOfBirth { get; set; }

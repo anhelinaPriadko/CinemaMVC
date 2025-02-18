@@ -1,8 +1,10 @@
 ﻿using System;
+using CinemaDomain.Model;
 using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore;
 
-namespace CinemaDomain.Model;
+//namespace CinemaDomain.Model;
+namespace CinemaInfrastructure;
 
 public partial class CinemaContext : DbContext
 {

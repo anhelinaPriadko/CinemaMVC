@@ -3,10 +3,8 @@ using System.Collections.Generic;
 
 namespace CinemaDomain.Model;
 
-public partial class Seat
+public partial class Seat: Entity
 {
-    public int Id { get; set; }
-
     public int HallId { get; set; }
 
     public int Row { get; set; }

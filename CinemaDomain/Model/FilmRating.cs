@@ -3,10 +3,8 @@ using System.Collections.Generic;
 
 namespace CinemaDomain.Model;
 
-public partial class FilmRating
+public partial class FilmRating: Entity
 {
-    public int Id { get; set; }
-
     public int ViewerId { get; set; }
 
     public int FilmId { get; set; }
