@@ -76,6 +76,10 @@ public partial class CinemaContext : DbContext
 
             entity.Property(e => e.Description).HasMaxLength(150);
 
+            entity.Property(e => e.Name)
+                  .HasMaxLength(40) // Відповідає nvarchar(40)
+                  .IsRequired();
+
             entity.HasOne(d => d.Company).WithMany(p => p.Films)
                 .HasForeignKey(d => d.CompanyId)
                 .OnDelete(DeleteBehavior.ClientSetNull)

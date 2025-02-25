@@ -5,6 +5,8 @@ namespace CinemaDomain.Model;
 
 public partial class Film: Entity
 {
+    public string Name { get; set; } = null!;
+
     public int CompanyId { get; set; }
 
     public int FilmCategoryId { get; set; }
