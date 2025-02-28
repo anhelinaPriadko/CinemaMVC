@@ -26,6 +26,24 @@ namespace CinemaInfrastructure.Controllers
             return View(await cinemaContext.ToListAsync());
         }
 
+        public async Task<IActionResult> IndexByHallType(int hallTypeId)
+        {
+            var hallTypeExists = await _context.HallTypes.AnyAsync(h => h.Id == hallTypeId);
+            if(!hallTypeExists)
+            {
+                return NotFound();
+            }
+
+            var halls = await _context.Halls
+                .Where(h => h.HallTypeId == hallTypeId)
+                .ToListAsync();
+
+            if(halls.Count() == 0)
+                TempData["Message"] = "На жаль, залів цього типу ще немає(";
+
+            return View("Index", halls);
+        }
+
         // GET: Halls/Details/5
         public async Task<IActionResult> Details(int? id)
         {
@@ -59,6 +77,13 @@ namespace CinemaInfrastructure.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create([Bind("Name,NumberOfRows,SeatsInRow,HallTypeId,Id")] Hall hall)
         {
+            HallType hallType = _context.HallTypes.Include(h => h.Halls)
+                .FirstOrDefault(h => h.Id == hall.HallTypeId);
+
+            hall.HallType = hallType;
+            ModelState.Clear();
+            TryValidateModel(hallType);
+
             if (ModelState.IsValid)
             {
                 _context.Add(hall);
