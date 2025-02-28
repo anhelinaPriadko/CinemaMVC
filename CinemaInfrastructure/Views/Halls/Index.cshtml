@@ -1,7 +1,7 @@
-﻿@model IEnumerable<CinemaDomain.Model.Company>
+﻿@model IEnumerable<CinemaDomain.Model.Hall>
 
 @{
-    ViewData["Title"] = "Кінокомпанії";
+    ViewData["Title"] = "Index";
 }
 
 <h1>Index</h1>
@@ -15,6 +15,15 @@
             <th>
                 @Html.DisplayNameFor(model => model.Name)
             </th>
+            <th>
+                @Html.DisplayNameFor(model => model.NumberOfRows)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.SeatsInRow)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.HallType)
+            </th>
             <th></th>
         </tr>
     </thead>
@@ -23,6 +32,15 @@
         <tr>
             <td>
                 @Html.DisplayFor(modelItem => item.Name)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.NumberOfRows)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.SeatsInRow)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.HallType.Name)
             </td>
             <td>
                 <a asp-action="Edit" asp-route-id="@item.Id">Edit</a> |

@@ -1,0 +1,94 @@
+﻿@model IEnumerable<CinemaDomain.Model.Film>
+
+@{
+    ViewData["Title"] = "Фільми";
+    int? categoryId = ViewBag.CategoryId as int?;
+    int? companyId = ViewBag.CompanyId as int?;
+}
+
+@if (TempData["Message"] != null)
+{
+    <div class="alert alert-info">@TempData["Message"]</div>
+}
+
+<h1>
+    @if (categoryId != null || companyId != null)
+    {
+        @:Фільми
+        @if (categoryId != null)
+        {
+            @: за категорією @categoryId
+        }
+        @if (companyId != null)
+        {
+            @: від компанії @companyId
+        }
+    }
+    else
+    {
+        @:Всі фільми
+    }
+</h1>
+
+<p>
+    @if (categoryId != null || companyId != null)
+    {
+        <a asp-action="Create" asp-route-categoryId="@categoryId" asp-route-companyId="@companyId" class="btn btn-primary">
+            Додати фільм 
+            @if (categoryId != null)
+            {
+                <span>за категорією @categoryId</span>
+            }
+            @if (companyId != null)
+            {
+                <span>від компанії @companyId</span>
+            }
+        </a>
+    }
+    else
+    {
+        <a asp-action="Create" class="btn btn-primary">Додати фільм</a>
+    }
+</p>
+<table class="table">
+    <thead>
+        <tr>
+            <th>
+                @Html.DisplayNameFor(model => model.ReleaseDate)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Description)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Company)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.FilmCategory)
+            </th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+@foreach (var item in Model) {
+        <tr>
+            <td>
+                @Html.DisplayFor(modelItem => item.ReleaseDate)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Description)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Company.Name)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.FilmCategory.Name)
+            </td>
+            <td>
+                <a asp-action="Edit" asp-route-id="@item.Id">Edit</a> |
+                <a asp-action="Details" asp-route-id="@item.Id">Details</a> |
+                <a asp-action="Delete" asp-route-id="@item.Id">Delete</a>
+            </td>
+        </tr>
+}
+    </tbody>
+</table>

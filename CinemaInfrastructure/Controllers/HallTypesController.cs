@@ -10,22 +10,22 @@ using CinemaInfrastructure;
 
 namespace CinemaInfrastructure.Controllers
 {
-    public class FilmCategoriesController : Controller
+    public class HallTypesController : Controller
     {
         private readonly CinemaContext _context;
 
-        public FilmCategoriesController(CinemaContext context)
+        public HallTypesController(CinemaContext context)
         {
             _context = context;
         }
 
-        // GET: FilmCategories
+        // GET: HallTypes
         public async Task<IActionResult> Index()
         {
-            return View(await _context.FilmCategories.ToListAsync());
+            return View(await _context.HallTypes.ToListAsync());
         }
 
-        // GET: FilmCategories/Details/5
+        // GET: HallTypes/Details/5
         public async Task<IActionResult> Details(int? id)
         {
             if (id == null)
@@ -33,39 +33,39 @@ namespace CinemaInfrastructure.Controllers
                 return NotFound();
             }
 
-            var filmCategory = await _context.FilmCategories
+            var hallType = await _context.HallTypes
                 .FirstOrDefaultAsync(m => m.Id == id);
-            if (filmCategory == null)
+            if (hallType == null)
             {
                 return NotFound();
             }
 
-            return RedirectToAction("IndexByCategory", "Films", new { categoryId = filmCategory.Id });
+            return View(hallType);
         }
 
-        // GET: FilmCategories/Create
+        // GET: HallTypes/Create
         public IActionResult Create()
         {
             return View();
         }
 
-        // POST: FilmCategories/Create
+        // POST: HallTypes/Create
         // To protect from overposting attacks, enable the specific properties you want to bind to.
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Name,Id")] FilmCategory filmCategory)
+        public async Task<IActionResult> Create([Bind("Name,Id")] HallType hallType)
         {
             if (ModelState.IsValid)
             {
-                _context.Add(filmCategory);
+                _context.Add(hallType);
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }
-            return View(filmCategory);
+            return View(hallType);
         }
 
-        // GET: FilmCategories/Edit/5
+        // GET: HallTypes/Edit/5
         public async Task<IActionResult> Edit(int? id)
         {
             if (id == null)
@@ -73,22 +73,22 @@ namespace CinemaInfrastructure.Controllers
                 return NotFound();
             }
 
-            var filmCategory = await _context.FilmCategories.FindAsync(id);
-            if (filmCategory == null)
+            var hallType = await _context.HallTypes.FindAsync(id);
+            if (hallType == null)
             {
                 return NotFound();
             }
-            return View(filmCategory);
+            return View(hallType);
         }
 
-        // POST: FilmCategories/Edit/5
+        // POST: HallTypes/Edit/5
         // To protect from overposting attacks, enable the specific properties you want to bind to.
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Name,Id")] FilmCategory filmCategory)
+        public async Task<IActionResult> Edit(int id, [Bind("Name,Id")] HallType hallType)
         {
-            if (id != filmCategory.Id)
+            if (id != hallType.Id)
             {
                 return NotFound();
             }
@@ -97,12 +97,12 @@ namespace CinemaInfrastructure.Controllers
             {
                 try
                 {
-                    _context.Update(filmCategory);
+                    _context.Update(hallType);
                     await _context.SaveChangesAsync();
                 }
                 catch (DbUpdateConcurrencyException)
                 {
-                    if (!FilmCategoryExists(filmCategory.Id))
+                    if (!HallTypeExists(hallType.Id))
                     {
                         return NotFound();
                     }
@@ -113,10 +113,10 @@ namespace CinemaInfrastructure.Controllers
                 }
                 return RedirectToAction(nameof(Index));
             }
-            return View(filmCategory);
+            return View(hallType);
         }
 
-        // GET: FilmCategories/Delete/5
+        // GET: HallTypes/Delete/5
         public async Task<IActionResult> Delete(int? id)
         {
             if (id == null)
@@ -124,34 +124,34 @@ namespace CinemaInfrastructure.Controllers
                 return NotFound();
             }
 
-            var filmCategory = await _context.FilmCategories
+            var hallType = await _context.HallTypes
                 .FirstOrDefaultAsync(m => m.Id == id);
-            if (filmCategory == null)
+            if (hallType == null)
             {
                 return NotFound();
             }
 
-            return View(filmCategory);
+            return View(hallType);
         }
 
-        // POST: FilmCategories/Delete/5
+        // POST: HallTypes/Delete/5
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            var filmCategory = await _context.FilmCategories.FindAsync(id);
-            if (filmCategory != null)
+            var hallType = await _context.HallTypes.FindAsync(id);
+            if (hallType != null)
             {
-                _context.FilmCategories.Remove(filmCategory);
+                _context.HallTypes.Remove(hallType);
             }
 
             await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
         }
 
-        private bool FilmCategoryExists(int id)
+        private bool HallTypeExists(int id)
         {
-            return _context.FilmCategories.Any(e => e.Id == id);
+            return _context.HallTypes.Any(e => e.Id == id);
         }
     }
 }

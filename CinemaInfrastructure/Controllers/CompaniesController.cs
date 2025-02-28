@@ -40,7 +40,7 @@ namespace CinemaInfrastructure.Controllers
                 return NotFound();
             }
 
-            return View(company);
+            return RedirectToAction("IndexByCompany", "Films", new { companyId = company.Id });
         }
 
         // GET: Companies/Create
