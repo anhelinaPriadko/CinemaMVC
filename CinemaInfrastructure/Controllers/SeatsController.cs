@@ -7,25 +7,45 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using CinemaDomain.Model;
 using CinemaInfrastructure;
+using Microsoft.VisualBasic;
 
 namespace CinemaInfrastructure.Controllers
 {
-    public class HallTypesController : Controller
+    public class SeatsController : Controller
     {
         private readonly CinemaContext _context;
 
-        public HallTypesController(CinemaContext context)
+        public SeatsController(CinemaContext context)
         {
             _context = context;
         }
 
-        // GET: HallTypes
+        // GET: Seats
         public async Task<IActionResult> Index()
         {
-            return View(await _context.HallTypes.ToListAsync());
+            var cinemaContext = _context.Seats.Include(s => s.Hall);
+            return View(await cinemaContext.ToListAsync());
         }
 
-        // GET: HallTypes/Details/5
+        public async Task<IActionResult> IndexByHall(int hallId)
+        {
+            var hallIdExists = await _context.Halls.AnyAsync(h => h.Id == hallId);
+            if(!hallIdExists)
+            {
+                return NotFound();
+            }
+
+            var seats = await _context.Seats.Where(s => s.HallId == hallId)
+                .ToListAsync();
+
+            if(seats.Count() == 0)
+                TempData["Message"] = "На жаль, в цьому залі ще немає місць(";
+
+            return View("Index", seats);
+
+        }
+
+        // GET: Seats/Details/5
         public async Task<IActionResult> Details(int? id)
         {
             if (id == null)
@@ -33,40 +53,50 @@ namespace CinemaInfrastructure.Controllers
                 return NotFound();
             }
 
-            var hallType = await _context.HallTypes
+            var seat = await _context.Seats
+                .Include(s => s.Hall)
                 .FirstOrDefaultAsync(m => m.Id == id);
-
-            if (hallType == null)
+            if (seat == null)
             {
                 return NotFound();
             }
 
-            return RedirectToAction("IndexByHallType", "Halls", new { hallTypeId = hallType.Id});
+            return View(seat);
         }
 
-        // GET: HallTypes/Create
+        // GET: Seats/Create
         public IActionResult Create()
         {
+            ViewData["HallId"] = new SelectList(_context.Halls, "Id", "Name");
             return View();
         }
 
-        // POST: HallTypes/Create
+        // POST: Seats/Create
         // To protect from overposting attacks, enable the specific properties you want to bind to.
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Name,Id")] HallType hallType)
+        public async Task<IActionResult> Create([Bind("HallId,Row,NumberInRow,Id")] Seat seat)
         {
+            Hall hall = await _context.Halls
+                .Include(h => h.HallType)
+                .FirstOrDefaultAsync(h => h.Id == seat.HallId);
+
+            seat.Hall = hall;
+            ModelState.Clear();
+            TryValidateModel(hall);
+
             if (ModelState.IsValid)
             {
-                _context.Add(hallType);
+                _context.Add(seat);
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }
-            return View(hallType);
+            ViewData["HallId"] = new SelectList(_context.Halls, "Id", "Name", seat.HallId);
+            return View(seat);
         }
 
-        // GET: HallTypes/Edit/5
+        // GET: Seats/Edit/5
         public async Task<IActionResult> Edit(int? id)
         {
             if (id == null)
@@ -74,22 +104,23 @@ namespace CinemaInfrastructure.Controllers
                 return NotFound();
             }
 
-            var hallType = await _context.HallTypes.FindAsync(id);
-            if (hallType == null)
+            var seat = await _context.Seats.FindAsync(id);
+            if (seat == null)
             {
                 return NotFound();
             }
-            return View(hallType);
+            ViewData["HallId"] = new SelectList(_context.Halls, "Id", "Name", seat.HallId);
+            return View(seat);
         }
 
-        // POST: HallTypes/Edit/5
+        // POST: Seats/Edit/5
         // To protect from overposting attacks, enable the specific properties you want to bind to.
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Name,Id")] HallType hallType)
+        public async Task<IActionResult> Edit(int id, [Bind("HallId,Row,NumberInRow,Id")] Seat seat)
         {
-            if (id != hallType.Id)
+            if (id != seat.Id)
             {
                 return NotFound();
             }
@@ -98,12 +129,12 @@ namespace CinemaInfrastructure.Controllers
             {
                 try
                 {
-                    _context.Update(hallType);
+                    _context.Update(seat);
                     await _context.SaveChangesAsync();
                 }
                 catch (DbUpdateConcurrencyException)
                 {
-                    if (!HallTypeExists(hallType.Id))
+                    if (!SeatExists(seat.Id))
                     {
                         return NotFound();
                     }
@@ -114,10 +145,11 @@ namespace CinemaInfrastructure.Controllers
                 }
                 return RedirectToAction(nameof(Index));
             }
-            return View(hallType);
+            ViewData["HallId"] = new SelectList(_context.Halls, "Id", "Name", seat.HallId);
+            return View(seat);
         }
 
-        // GET: HallTypes/Delete/5
+        // GET: Seats/Delete/5
         public async Task<IActionResult> Delete(int? id)
         {
             if (id == null)
@@ -125,34 +157,35 @@ namespace CinemaInfrastructure.Controllers
                 return NotFound();
             }
 
-            var hallType = await _context.HallTypes
+            var seat = await _context.Seats
+                .Include(s => s.Hall)
                 .FirstOrDefaultAsync(m => m.Id == id);
-            if (hallType == null)
+            if (seat == null)
             {
                 return NotFound();
             }
 
-            return View(hallType);
+            return View(seat);
         }
 
-        // POST: HallTypes/Delete/5
+        // POST: Seats/Delete/5
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            var hallType = await _context.HallTypes.FindAsync(id);
-            if (hallType != null)
+            var seat = await _context.Seats.FindAsync(id);
+            if (seat != null)
             {
-                _context.HallTypes.Remove(hallType);
+                _context.Seats.Remove(seat);
             }
 
             await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
         }
 
-        private bool HallTypeExists(int id)
+        private bool SeatExists(int id)
         {
-            return _context.HallTypes.Any(e => e.Id == id);
+            return _context.Seats.Any(e => e.Id == id);
         }
     }
 }

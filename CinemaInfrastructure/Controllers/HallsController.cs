@@ -60,7 +60,7 @@ namespace CinemaInfrastructure.Controllers
                 return NotFound();
             }
 
-            return View(hall);
+            return RedirectToAction("IndexByHall", "Seats", new { hallId = hall.Id});
         }
 
         // GET: Halls/Create
