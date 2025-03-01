@@ -110,6 +110,26 @@ namespace CinemaInfrastructure.Controllers
             return RedirectToAction("IndexByFilm", "Sessions", new { filmId = film.Id});
         }
 
+        public async Task<IActionResult> DetailsByRatings(int? id)
+        {
+            if (id == null)
+            {
+                return NotFound();
+            }
+
+            var film = await _context.Films
+                .Include(f => f.Company)
+                .Include(f => f.FilmCategory)
+                .FirstOrDefaultAsync(m => m.Id == id);
+            if (film == null)
+            {
+                return NotFound();
+            }
+
+            return RedirectToAction("IndexByFilms", "FilmRatings", new { filmId = film.Id });
+        }
+
+
         // GET: Films/Create
         public IActionResult Create(int? categoryId, int? companyId)
         {

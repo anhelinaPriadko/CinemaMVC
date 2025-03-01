@@ -43,6 +43,23 @@ namespace CinemaInfrastructure.Controllers
             return View(viewer);
         }
 
+        public async Task<IActionResult> DetailsByRatings(int? id)
+        {
+            if (id == null)
+            {
+                return NotFound();
+            }
+
+            var viewer = await _context.Viewers
+                .FirstOrDefaultAsync(m => m.Id == id);
+            if (viewer == null)
+            {
+                return NotFound();
+            }
+
+            return RedirectToAction("IndexByViewers", "FilmRatings", new { viewerId = viewer.Id });
+        }
+
         // GET: Viewers/Create
         public IActionResult Create()
         {
