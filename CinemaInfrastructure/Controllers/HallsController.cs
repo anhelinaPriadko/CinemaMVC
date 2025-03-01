@@ -45,7 +45,7 @@ namespace CinemaInfrastructure.Controllers
         }
 
         // GET: Halls/Details/5
-        public async Task<IActionResult> Details(int? id)
+        public async Task<IActionResult> DetailsBySeats(int? id)
         {
             if (id == null)
             {
@@ -61,6 +61,24 @@ namespace CinemaInfrastructure.Controllers
             }
 
             return RedirectToAction("IndexByHall", "Seats", new { hallId = hall.Id});
+        }
+
+        public async Task<IActionResult> DetailsBySessions(int? id)
+        {
+            if (id == null)
+            {
+                return NotFound();
+            }
+
+            var hall = await _context.Halls
+                .Include(h => h.HallType)
+                .FirstOrDefaultAsync(m => m.Id == id);
+            if (hall == null)
+            {
+                return NotFound();
+            }
+
+            return RedirectToAction("IndexByHall", "Sessions", new { hallId = hall.Id });
         }
 
         // GET: Halls/Create
