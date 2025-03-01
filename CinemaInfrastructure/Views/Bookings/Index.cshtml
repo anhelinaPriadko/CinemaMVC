@@ -1,0 +1,57 @@
+﻿@model IEnumerable<CinemaDomain.Model.Booking>
+
+@{
+    ViewData["Title"] = "Index";
+}
+
+<h1>Index</h1>
+
+<p>
+    <a asp-action="Create">Create New</a>
+</p>
+<table class="table">
+    <thead>
+        <tr>
+            <th>
+                @Html.DisplayNameFor(model => model.Seat)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Session)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Viewer)
+            </th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>@Html.DisplayFor(modelItem => item.Seat.Id)</td>
+                <td>@Html.DisplayFor(modelItem => item.Session.Id)</td>
+                <td>@Html.DisplayFor(modelItem => item.Viewer.Name)</td>
+                <td>
+                    @Html.ActionLink("Edit", "Edit", new
+                        {
+                            viewerId = item.ViewerId,
+                            sessionId = item.SessionId,
+                            seatId = item.SeatId
+                        }) |
+                    @Html.ActionLink("Details", "Details", new
+                        {
+                            viewerId = item.ViewerId,
+                            sessionId = item.SessionId,
+                            seatId = item.SeatId
+                        }) |
+                    @Html.ActionLink("Delete", "Delete", new
+                        {
+                            viewerId = item.ViewerId,
+                            sessionId = item.SessionId,
+                            seatId = item.SeatId
+                        })
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
