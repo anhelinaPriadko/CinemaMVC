@@ -64,6 +64,24 @@ namespace CinemaInfrastructure.Controllers
             return View(seat);
         }
 
+        public async Task<IActionResult> DetailsByBookings(int? id)
+        {
+            if (id == null)
+            {
+                return NotFound();
+            }
+
+            var seat = await _context.Seats
+                .Include(s => s.Hall)
+                .FirstOrDefaultAsync(m => m.Id == id);
+            if (seat == null)
+            {
+                return NotFound();
+            }
+
+            return RedirectToAction("IndexBySeats", "Bookings", new { seatId = seat.Id});
+        }
+
         // GET: Seats/Create
         public IActionResult Create()
         {

@@ -26,6 +26,54 @@ namespace CinemaInfrastructure.Controllers
             return View(await cinemaContext.ToListAsync());
         }
 
+        public async Task<IActionResult> IndexBySessions(int sessionId)
+        {
+            var sessionExists = await _context.Sessions.AnyAsync(s => s.Id == sessionId);
+            if (!sessionExists)
+                return NotFound();
+
+            var bookings = await _context.Bookings.Where(b => b.SessionId == sessionId)
+                .Include(b => b.Seat).Include(b => b.Session).Include(b => b.Viewer)
+                .ToListAsync();
+
+            if(bookings.Count() == 0)
+                TempData["Message"] = "На жаль, на цей сеанс ще немає бронювань(";
+
+            return View("Index", bookings);
+        }
+
+        public async Task<IActionResult> IndexByViewers(int viewerId)
+        {
+            var viewerExists = await _context.Viewers.AnyAsync(s => s.Id == viewerId);
+            if (!viewerExists)
+                return NotFound();
+
+            var bookings = await _context.Bookings.Where(b => b.ViewerId == viewerId)
+                .Include(b => b.Seat).Include(b => b.Session).Include(b => b.Viewer)
+                .ToListAsync();
+
+            if (bookings.Count() == 0)
+                TempData["Message"] = "На жаль, у цього користувача ще немає бронювань(";
+
+            return View("Index", bookings);
+        }
+
+        public async Task<IActionResult> IndexBySeats(int seatId)
+        {
+            var seatExists = await _context.Seats.AnyAsync(s => s.Id == seatId);
+            if (!seatExists)
+                return NotFound();
+
+            var bookings = await _context.Bookings.Where(b => b.SeatId == seatId)
+                .Include(b => b.Seat).Include(b => b.Session).Include(b => b.Viewer)
+                .ToListAsync();
+
+            if (bookings.Count() == 0)
+                TempData["Message"] = "На жаль, це місце ще не заброньоване на жоден сеанс(";
+
+            return View("Index", bookings);
+        }
+
         // GET: Bookings/Details/5
         public async Task<IActionResult> Details(int? viewerId, int? sessionId, int? seatId)
         {
