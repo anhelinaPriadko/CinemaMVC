@@ -168,6 +168,21 @@ namespace CinemaInfrastructure.Controllers
                 return NotFound();
             }
 
+            Film film = await _context.Films
+                .Include(f => f.Company)
+                .Include(f => f.FilmCategory)
+                .FirstOrDefaultAsync(f => f.Id == session.FilmId);
+
+            Hall hall = await _context.Halls
+                .Include(h => h.HallType)
+                .FirstOrDefaultAsync(h => h.Id == session.HallId);
+
+            session.Hall = hall;
+            session.Film = film;
+
+            ModelState.Clear();
+            TryValidateModel(session);
+
             if (ModelState.IsValid)
             {
                 try
