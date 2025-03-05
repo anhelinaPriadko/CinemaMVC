@@ -143,6 +143,14 @@ namespace CinemaInfrastructure.Controllers
                 return NotFound();
             }
 
+            Hall hall = await _context.Halls
+                .Include(h => h.HallType)
+                .FirstOrDefaultAsync(h => h.Id == seat.HallId);
+            seat.Hall = hall;
+
+            ModelState.Clear();
+            TryValidateModel(seat);
+
             if (ModelState.IsValid)
             {
                 try
