@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 
 namespace CinemaDomain.Model;
 
@@ -10,10 +11,10 @@ public partial class Hall: Entity
     public int NumberOfRows { get; set; }
 
     public int SeatsInRow { get; set; }
-
+    
     public int HallTypeId { get; set; }
 
-    public virtual HallType HallType { get; set; } = null!;
+    public virtual HallType HallType { get; set; }
 
     public virtual ICollection<Seat> Seats { get; set; } = new List<Seat>();
 

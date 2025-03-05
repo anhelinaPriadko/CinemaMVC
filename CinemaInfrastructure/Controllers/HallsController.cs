@@ -7,6 +7,8 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using CinemaDomain.Model;
 using CinemaInfrastructure;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
+using System.Diagnostics;
 
 namespace CinemaInfrastructure.Controllers
 {
@@ -121,10 +123,12 @@ namespace CinemaInfrastructure.Controllers
             }
 
             var hall = await _context.Halls.FindAsync(id);
+
             if (hall == null)
             {
                 return NotFound();
             }
+
             ViewData["HallTypeId"] = new SelectList(_context.HallTypes, "Id", "Name", hall.HallTypeId);
             return View(hall);
         }
@@ -140,6 +144,12 @@ namespace CinemaInfrastructure.Controllers
             {
                 return NotFound();
             }
+
+            hall.HallType = await _context.HallTypes
+                .FindAsync(hall.HallTypeId);
+
+            ModelState.Clear();
+            TryValidateModel(hall);
 
             if (ModelState.IsValid)
             {
