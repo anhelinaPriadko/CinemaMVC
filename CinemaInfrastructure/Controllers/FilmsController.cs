@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using CinemaDomain.Model;
 using CinemaInfrastructure;
+using System.Runtime.InteropServices;
 
 namespace CinemaInfrastructure.Controllers
 {
@@ -212,6 +213,17 @@ namespace CinemaInfrastructure.Controllers
             {
                 return NotFound();
             }
+
+            FilmCategory filmCategory = await _context.FilmCategories
+                .FindAsync(film.FilmCategoryId);
+            Company company = await _context.Companies
+                .FindAsync(film.CompanyId);
+
+            film.FilmCategory = filmCategory;
+            film.Company = company;
+
+            ModelState.Clear();
+            TryValidateModel(film);
 
             if (ModelState.IsValid)
             {

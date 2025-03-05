@@ -152,6 +152,24 @@ namespace CinemaInfrastructure.Controllers
                 return NotFound();
             }
 
+            Viewer viewer = await _context.Viewers.FindAsync(filmRating.ViewerId);
+
+            Film film = await _context.Films
+                .Include(f => f.Company)
+                .Include(f => f.FilmCategory)
+                .FirstOrDefaultAsync(f => f.Id == filmRating.FilmId);
+
+            if (film == null || viewer == null)
+            {
+                return NotFound();
+            }
+
+            filmRating.Viewer = viewer;
+            filmRating.Film = film;
+
+            ModelState.Clear();
+            TryValidateModel(filmRating);
+
             if (ModelState.IsValid)
             {
                 try
