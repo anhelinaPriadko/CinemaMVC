@@ -1,40 +1,119 @@
 ﻿@model CinemaDomain.Model.Booking
 
 @{
-    ViewData["Title"] = "Create";
+    ViewData["Title"] = "Створити бронювання";
 }
 
-<h1>Створити</h1>
+<h1>Створити бронювання</h1>
 
-<h4>бронювання</h4>
-<hr />
-<div class="row">
-    <div class="col-md-4">
-        <form asp-action="Create">
-            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-            <div class="form-group">
-                <label asp-for="ViewerId" class="control-label"></label>
-                <select asp-for="ViewerId" class ="form-control" asp-items="ViewBag.ViewerId"></select>
-            </div>
-            <div class="form-group">
-                <label asp-for="SessionId" class="control-label"></label>
-                <select asp-for="SessionId" class ="form-control" asp-items="ViewBag.SessionId"></select>
-            </div>
-            <div class="form-group">
-                <label asp-for="SeatId" class="control-label"></label>
-                <select asp-for="SeatId" class ="form-control" asp-items="ViewBag.SeatId"></select>
-            </div>
-            <div class="form-group">
-                <input type="submit" value="Create" class="btn btn-primary" />
-            </div>
-        </form>
+<form asp-action="Create" method="post">
+    <div class="form-group">
+        <label asp-for="ViewerId"></label>
+        <select asp-for="ViewerId" class="form-control" asp-items="ViewBag.ViewerId"></select>
     </div>
-</div>
-
-<div>
-    <a asp-action="Index">Назад</a>
-</div>
+    <div class="form-group">
+        <label for="FilmId">Фільм</label>
+        <select id="FilmId" class="form-control">
+            <option value="">Оберіть фільм</option>
+            @foreach (var film in ViewBag.Films)
+            {
+                <option value="@film.Id">@film.Name</option>
+            }
+        </select>
+    </div>
+    <div class="form-group">
+        <label for="SessionTime">Час сеансу</label>
+        <select id="SessionTime" name="SessionId" class="form-control">
+            <option value="">Оберіть час</option>
+            @* Список сеансів буде заповнюватися через Ajax *@
+        </select>
+    </div>
+    <div class="form-group">
+        <label for="RowSelect">Ряд</label>
+        <select id="RowSelect" class="form-control">
+            <option value="">Оберіть ряд</option>
+            @* Список рядів буде завантажуватись через Ajax після вибору сеансу *@
+        </select>
+    </div>
+    <div class="form-group">
+        <label for="SeatId">Місце</label>
+        <select id="SeatId" name="SeatId" class="form-control">
+            <option value="">Оберіть місце</option>
+            @* Список місць буде завантажуватись через Ajax після вибору ряду *@
+        </select>
+    </div>
+    <input type="submit" value="Створити" class="btn btn-primary" />
+</form>
 
 @section Scripts {
-    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    <script>
+        $(document).ready(function () {
+    // При зміні фільму отримуємо список сеансів (часів)
+    $("#FilmId").change(function () {
+        var filmId = $(this).val();
+        if (filmId) {
+            $.ajax({
+                url: '@Url.Action("GetSessionsByFilm", "Bookings")',
+                data: { filmId: filmId },
+                success: function (data) {
+                    console.log("Сеанси:", data); // для налагодження
+                    $("#SessionTime").empty().append('<option value="">Оберіть час</option>');
+                    $.each(data, function (i, session) {
+                        $("#SessionTime").append('<option value="' + session.id + '">' + session.time + '</option>');
+                    });
+                }
+            });
+        } else {
+            $("#SessionTime").empty().append('<option value="">Оберіть час</option>');
+            $("#RowSelect").empty().append('<option value="">Оберіть ряд</option>');
+            $("#SeatId").empty().append('<option value="">Оберіть місце</option>');
+        }
+    });
+    
+    // При зміні сеансу завантажуємо список рядів
+    $("#SessionTime").change(function () {
+        var sessionId = $(this).val();
+        if (sessionId) {
+            $.ajax({
+                url: '@Url.Action("GetRowsBySession", "Bookings")',
+                data: { sessionId: sessionId },
+                success: function (data) {
+                    console.log("Ряди:", data); // для налагодження
+                    $("#RowSelect").empty().append('<option value="">Оберіть ряд</option>');
+                    $.each(data, function (i, row) {
+                        $("#RowSelect").append('<option value="' + row + '">' + row + '</option>');
+                    });
+                    // Очищуємо список місць, якщо раніше було вибрано якийсь ряд
+                    $("#SeatId").empty().append('<option value="">Оберіть місце</option>');
+                }
+            });
+        } else {
+            $("#RowSelect").empty().append('<option value="">Оберіть ряд</option>');
+            $("#SeatId").empty().append('<option value="">Оберіть місце</option>');
+        }
+    });
+    
+    // При зміні ряду завантажуємо список місць у цьому ряду
+    $("#RowSelect").change(function () {
+        var sessionId = $("#SessionTime").val();
+        var row = $(this).val();
+        if (sessionId && row) {
+            $.ajax({
+                url: '@Url.Action("GetSeatsByRow", "Bookings")',
+                data: { sessionId: sessionId, row: row },
+                success: function (data) {
+                    console.log("Місця:", data); // для налагодження
+                    $("#SeatId").empty().append('<option value="">Оберіть місце</option>');
+                    $.each(data, function (i, seat) {
+                        $("#SeatId").append('<option value="' + seat.id + '">' + seat.numberInRow + '</option>');
+                    });
+                }
+            });
+        } else {
+            $("#SeatId").empty().append('<option value="">Оберіть місце</option>');
+        }
+    });
+});
+
+    </script>
 }

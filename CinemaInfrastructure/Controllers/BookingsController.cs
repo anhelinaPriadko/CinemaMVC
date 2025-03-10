@@ -108,13 +108,74 @@ namespace CinemaInfrastructure.Controllers
 
 
         // GET: Bookings/Create
+        // GET: Bookings/Create
         public IActionResult Create()
         {
-            ViewData["SeatId"] = new SelectList(_context.Seats, "Id", "Id");
-            ViewData["SessionId"] = new SelectList(_context.Sessions, "Id", "Id");
+            // Завантажуємо список фільмів із бази даних
+            var films = _context.Films.ToList();
+            // Передаємо список у ViewBag, щоб у View використовувати його для формування випадаючого списку
+            ViewBag.Films = films;
+
+            // Якщо потрібно – завантажуємо дані для інших списків
             ViewData["ViewerId"] = new SelectList(_context.Viewers, "Id", "Name");
+            // Для сеансів та місць залишаємо порожні або формуємо їх через AJAX
             return View();
         }
+
+        public async Task<IActionResult> GetSessionsByFilm(int filmId)
+        {
+            // Отримуємо сеанси для обраного фільму
+            var sessions = await _context.Sessions
+                .Where(s => s.Film.Id == filmId)
+                .Select(s => new {
+                    s.Id,
+                    Time = s.SessionTime.ToString("dd.MM HH:mm")
+                })
+                .ToListAsync();
+            return Json(sessions);
+        }
+
+        public async Task<IActionResult> GetRowsBySession(int sessionId)
+        {
+            var session = await _context.Sessions
+                .Include(s => s.Hall)
+                .FirstOrDefaultAsync(s => s.Id == sessionId);
+
+            if (session == null)
+                return Json(new List<object>());
+
+            var rows = await _context.Seats
+                .Where(s => s.Hall.Id == session.Hall.Id)
+                .Select(s => s.Row)
+                .Distinct()
+                .OrderBy(r => r)
+                .ToListAsync();
+            return Json(rows);
+        }
+
+
+        public async Task<IActionResult> GetSeatsByRow(int sessionId, int row)
+        {
+            var session = await _context.Sessions
+                .Include(s => s.Hall)
+                .FirstOrDefaultAsync(s => s.Id == sessionId);
+            if (session == null)
+                return Json(new List<object>());
+
+            var seats = await _context.Seats
+                .Where(s => s.Hall.Id == session.Hall.Id && s.Row == row)
+                .Select(s => new {
+                    s.Id,
+                    s.NumberInRow
+                })
+                .OrderBy(s => s.NumberInRow)
+                .ToListAsync();
+            return Json(seats);
+        }
+
+
+
+
 
         // POST: Bookings/Create
         // To protect from overposting attacks, enable the specific properties you want to bind to.
@@ -182,11 +243,11 @@ namespace CinemaInfrastructure.Controllers
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(
-    int viewerId,
-    int sessionId,
-    int seatId,
-    int newSeatId // Це ім'я поля, яке ми передали через <select name="NewSeatId" 
-)
+            int viewerId,
+            int sessionId,
+            int seatId,
+            int newSeatId // Це ім'я поля, яке ми передали через <select name="NewSeatId" 
+        )
         {
             var oldBooking = await _context.Bookings.FindAsync(viewerId, sessionId, seatId);
             if (oldBooking == null)
