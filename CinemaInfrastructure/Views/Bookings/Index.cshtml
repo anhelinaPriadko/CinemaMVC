@@ -12,15 +12,11 @@
 <table class="table">
     <thead>
         <tr>
-            <th>
-                @Html.DisplayNameFor(model => model.Seat)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Session)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Viewer)
-            </th>
+            <th>Фільм</th>
+            <th>Час сеансу</th>
+            <th>Ряд</th>
+            <th>Місце</th>
+            <th>Глядач</th>
             <th></th>
         </tr>
     </thead>
@@ -28,8 +24,10 @@
         @foreach (var item in Model)
         {
             <tr>
-                <td>@Html.DisplayFor(modelItem => item.Seat.Id)</td>
-                <td>@Html.DisplayFor(modelItem => item.Session.Id)</td>
+                <td>@Html.DisplayFor(modelItem => item.Session.Film.Name)</td>
+                <td>@item.Session.SessionTime.ToString("dd.MM.yyyy HH:mm")</td>
+                <td>@Html.DisplayFor(modelItem => item.Seat.Row)</td>
+                <td>@Html.DisplayFor(modelItem => item.Seat.NumberInRow)</td>
                 <td>@Html.DisplayFor(modelItem => item.Viewer.Name)</td>
                 <td>
                     @Html.ActionLink("Edit", "Edit", new

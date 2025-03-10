@@ -22,7 +22,10 @@ namespace CinemaInfrastructure.Controllers
         // GET: Bookings
         public async Task<IActionResult> Index()
         {
-            var cinemaContext = _context.Bookings.Include(b => b.Seat).Include(b => b.Session).Include(b => b.Viewer);
+            var cinemaContext = _context.Bookings.Include(b => b.Seat)
+                .Include(b => b.Session)
+                .Include(b => b.Session.Film)
+                .Include(b => b.Viewer);
             return View(await cinemaContext.ToListAsync());
         }
 
