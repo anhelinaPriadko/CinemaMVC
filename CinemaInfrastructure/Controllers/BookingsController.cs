@@ -36,9 +36,6 @@ namespace CinemaInfrastructure.Controllers
                 .Include(b => b.Seat).Include(b => b.Session).Include(b => b.Viewer)
                 .ToListAsync();
 
-            if(bookings.Count() == 0)
-                TempData["Message"] = "На жаль, на цей сеанс ще немає бронювань(";
-
             return View("Index", bookings);
         }
 
@@ -68,8 +65,6 @@ namespace CinemaInfrastructure.Controllers
                 .Include(b => b.Seat).Include(b => b.Session).Include(b => b.Viewer)
                 .ToListAsync();
 
-            if (bookings.Count() == 0)
-                TempData["Message"] = "На жаль, це місце ще не заброньоване на жоден сеанс(";
 
             return View("Index", bookings);
         }
@@ -219,21 +214,36 @@ namespace CinemaInfrastructure.Controllers
 
         // GET: Bookings/Edit
         public async Task<IActionResult> Edit(int viewerId, int sessionId, int seatId)
-        {
-            var booking = await _context.Bookings
-                .Include(b => b.Seat)
-                .FirstOrDefaultAsync(b =>
-                    b.ViewerId == viewerId &&
-                    b.SessionId == sessionId &&
-                    b.SeatId == seatId);
+{
+    var booking = await _context.Bookings
+        .Include(b => b.Seat)
+        .Include(b => b.Session)
+            .ThenInclude(s => s.Film)
+        .FirstOrDefaultAsync(b =>
+            b.ViewerId == viewerId &&
+            b.SessionId == sessionId &&
+            b.SeatId == seatId);
 
-            if (booking == null)
-                return NotFound();
+    if (booking == null)
+        return NotFound();
 
-            ViewBag.Seats = await _context.Seats.ToListAsync();
+    // Завантажуємо список всіх фільмів
+    ViewBag.Films = _context.Films.ToList();
 
-            return View(booking);
-        }
+    // Завантажуємо сеанси для того фільму, який прив’язаний до цього бронювання
+    ViewBag.Sessions = _context.Sessions
+        .Where(s => s.FilmId == booking.Session.FilmId)
+        .Select(s => new {
+            s.Id,
+            SessionTime = s.SessionTime.ToString("dd.MM HH:mm")
+        })
+        .ToList();
+
+    // Можна не завантажувати rows/seats – вони будуть отримуватися через AJAX
+
+    return View(booking);
+}
+
 
 
 
@@ -243,31 +253,34 @@ namespace CinemaInfrastructure.Controllers
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(
-            int viewerId,
-            int sessionId,
-            int seatId,
-            int newSeatId // Це ім'я поля, яке ми передали через <select name="NewSeatId" 
-        )
+                int viewerId,
+                int sessionId, // Старий SessionId
+                int seatId,    // Старий SeatId
+                int newSessionId, // Новий SessionId
+                int newSeatId     // Новий SeatId
+                )
         {
             var oldBooking = await _context.Bookings.FindAsync(viewerId, sessionId, seatId);
             if (oldBooking == null)
                 return NotFound();
 
+            // Видаляємо старе бронювання
             _context.Bookings.Remove(oldBooking);
 
+            // Створюємо нове бронювання з новими даними
             var newBooking = new Booking
             {
                 ViewerId = oldBooking.ViewerId,
-                SessionId = oldBooking.SessionId,
-                SeatId = newSeatId
+                SessionId = newSessionId, // Оновлений сеанс
+                SeatId = newSeatId        // Оновлене місце
             };
 
             _context.Bookings.Add(newBooking);
-
             await _context.SaveChangesAsync();
 
             return RedirectToAction(nameof(Index));
         }
+
 
 
         private bool BookingExists(int viewerId, int sessionId, int seatId)
