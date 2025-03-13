@@ -1,24 +1,6 @@
 ﻿@{
     ViewData["Title"] = "Головна сторінка";
-    var navLinks = ViewData["NavLinks"] as List<(string Text, string Controller, string Action)>;
 }
-
-<div class="d-flex align-items-center justify-content-center mb-4">
-
-    <!-- Навігація праворуч -->
-    <nav class="nav">
-        <a class="nav-link text-light" href="@Url.Action("Index", "FilmCategories")">Категорії фільмів</a>
-        <a class="nav-link text-light" href="@Url.Action("Index", "Companies")">Виробники фільмів</a>
-        <a class="nav-link text-light" href="@Url.Action("Index", "HallTypes")">Типи залів</a>
-        <a class="nav-link text-light" href="@Url.Action("Index", "Films")">Фільми</a>
-        <a class="nav-link text-light" href="@Url.Action("Index", "Halls")">Зали</a>
-        <a class="nav-link text-light" href="@Url.Action("Index", "Seats")">Місця</a>
-        <a class="nav-link text-light" href="@Url.Action("Index", "Sessions")">Сеанси</a>
-        <a class="nav-link text-light" href="@Url.Action("Index", "Viewers")">Глядачі</a>
-        <a class="nav-link text-light" href="@Url.Action("Index", "FilmRatings")">Оцінки</a>
-        <a class="nav-link text-light" href="@Url.Action("Index", "Bookings")">Бронювання</a>
-    </nav>
-</div>
 
 <div class="text-center">
     <h1 class="display-3">DreamScreen</h1>
