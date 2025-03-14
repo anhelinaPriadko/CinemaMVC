@@ -238,7 +238,7 @@ namespace CinemaInfrastructure.Controllers
         .Where(s => s.FilmId == booking.Session.FilmId)
         .Select(s => new {
             s.Id,
-            SessionTime = s.SessionTime.ToString("dd.MM HH:mm")
+            SessionTime = s.SessionTime.ToString("dd.MM.yyyy HH:mm")
         })
         .ToList();
 

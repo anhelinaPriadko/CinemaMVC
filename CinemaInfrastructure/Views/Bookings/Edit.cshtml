@@ -10,16 +10,9 @@
 <form asp-action="Edit" method="post">
     <div asp-validation-summary="ModelOnly" class="text-danger"></div>
 
-    <!-- Зберігаємо ViewerId і SessionId, бо вони не змінюються -->
-    <!-- Приховані поля для збереження старих значень -->
         <input type="hidden" name="viewerId" value="@Model.ViewerId" />
         <input type="hidden" name="sessionId" value="@Model.SessionId" />
         <input type="hidden" name="seatId" value="@Model.SeatId" />
-
-    <div class="form-group">
-        <label>Поточний ряд та місце</label>
-        <input class="form-control" value="Ряд: @Model.Seat?.Row, Місце: @Model.Seat?.NumberInRow" readonly />
-    </div>
 
     <div class="form-group">
         <label for="FilmName">Фільм</label>
@@ -29,25 +22,26 @@
         <div class="form-group">
         <label for="SessionTime">Час сеансу</label>
         <select id="SessionTime" name="newSessionId" class="form-control">
-            <option value="@Model.SessionId" selected>@Model.Session.SessionTime</option>
+                    <option value="@Model.SessionId" selected>@Model.Session.SessionTime.ToString("dd.MM.yyyy HH:mm")</option>
             @foreach (var session in ViewBag.Sessions)
             {
-                <option value="@session.Id">@session.SessionTime</option>
+                if (session.Id != Model.SessionId)
+                {
+                    <option value="@session.Id">@Convert.ToDateTime(session.SessionTime).ToString("dd.MM.yyyy HH:mm")</option>
+                }
             }
         </select>
     </div>
             <div class="form-group">
                 <label for="RowSelect">Ряд</label>
                 <select id="RowSelect" class="form-control">
-                    <option value="">Оберіть ряд</option>
-                    @* Список рядів буде завантажуватись через AJAX після вибору сеансу *@
+                    <option value="@Model.Seat.Row">@Model.Seat.Row</option>
                 </select>
             </div>
             <div class="form-group">
                 <label for="SeatId">Місце</label>
                 <select id="SeatId" name="newSeatId" class="form-control">
-                    <option value="">Оберіть місце</option>
-                    @* Список місць буде завантажуватись через AJAX після вибору ряду *@
+                    <option value="@Model.SeatId">@Model.Seat.NumberInRow</option>
                 </select>
             </div>
 
@@ -62,75 +56,66 @@
 
 @section Scripts {
     <script>
-        $(document).ready(function () {
-            // Прив’язка обробників подій
+                $(document).ready(function () {
+            function resetRowsAndSeats() {
+                $("#RowSelect").empty().append('<option value="">Оберіть ряд</option>');
+                $("#SeatId").empty().append('<option value="">Оберіть місце</option>');
+            }
 
-            // При зміні фільму – завантаження сеансів
-            $("#FilmId").change(function () {
-                var filmId = $(this).val();
-                if (filmId) {
-                    $.ajax({
-                        url: '@Url.Action("GetSessionsByFilm", "Bookings")',
-                        data: { filmId: filmId },
-                        success: function (data) {
-                            $("#SessionTime").empty().append('<option value="">Оберіть час</option>');
-                            $.each(data, function (i, session) {
-                                $("#SessionTime").append('<option value="' + session.id + '">' + session.time + '</option>');
-                            });
-                        }
-                    });
-                } else {
-                    $("#SessionTime").empty().append('<option value="">Оберіть час</option>');
-                }
-            });
-
-            // При зміні сеансу – завантаження рядів
-            $("#SessionTime").change(function () {
-                var sessionId = $(this).val();
+            function loadRowsAndSeats(sessionId, selectedRow) {
                 if (sessionId) {
                     $.ajax({
                         url: '@Url.Action("GetRowsBySession", "Bookings")',
                         data: { sessionId: sessionId },
-                        success: function (data) {
-                            $("#RowSelect").empty().append('<option value="">Оберіть ряд</option>');
-                            $.each(data, function (i, row) {
-                                $("#RowSelect").append('<option value="' + row + '">' + row + '</option>');
+                        success: function (rows) {
+                            resetRowsAndSeats();
+                            $.each(rows, function (i, row) {
+                                var isSelected = (row == selectedRow) ? " selected" : "";
+                                $("#RowSelect").append('<option value="' + row + '"' + isSelected + '>' + row + '</option>');
                             });
-                            $("#SeatId").empty().append('<option value="">Оберіть місце</option>');
+
+                            // Якщо є вибраний ряд, підтягуємо доступні місця
+                            if (selectedRow) {
+                                loadSeats(sessionId, selectedRow);
+                            }
                         }
                     });
                 } else {
-                    $("#RowSelect").empty().append('<option value="">Оберіть ряд</option>');
-                    $("#SeatId").empty().append('<option value="">Оберіть місце</option>');
+                    resetRowsAndSeats();
                 }
-            });
+            }
 
-            // При зміні ряду – завантаження місць у цьому ряду
-            $("#RowSelect").change(function () {
-                var sessionId = $("#SessionTime").val();
-                var row = $(this).val();
+            function loadSeats(sessionId, row) {
                 if (sessionId && row) {
                     $.ajax({
                         url: '@Url.Action("GetSeatsByRow", "Bookings")',
                         data: { sessionId: sessionId, row: row },
-                        success: function (data) {
+                        success: function (seats) {
                             $("#SeatId").empty().append('<option value="">Оберіть місце</option>');
-                            $.each(data, function (i, seat) {
-                                $("#SeatId").append('<option value="' + seat.id + '">' + seat.numberInRow + '</option>');
+                            $.each(seats, function (i, seat) {
+                                var isSelected = (seat.id == '@Model.SeatId') ? " selected" : "";
+                                $("#SeatId").append('<option value="' + seat.id + '"' + isSelected + '>' + seat.numberInRow + '</option>');
                             });
                         }
                     });
                 } else {
                     $("#SeatId").empty().append('<option value="">Оберіть місце</option>');
                 }
+            }
+
+            $("#SessionTime").change(function () {
+                var sessionId = $(this).val();
+                loadRowsAndSeats(sessionId, null);
             });
 
-            // Тепер, після прив'язки обробників, перевіряємо preset значення
-            var presetSessionId = '@Model.SessionId';
-            if (presetSessionId) {
-                $("#SessionTime").val(presetSessionId);
-                $("#SessionTime").trigger("change");
-            }
+            $("#RowSelect").change(function () {
+                var sessionId = $("#SessionTime").val();
+                var row = $(this).val();
+                loadSeats(sessionId, row);
+            });
+
+            // Завантажуємо ряди та місця при завантаженні сторінки
+            loadRowsAndSeats('@Model.SessionId', '@Model.Seat.Row');
         });
     </script>
 }
