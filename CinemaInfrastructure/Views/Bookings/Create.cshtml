@@ -9,7 +9,9 @@
 <form asp-action="Create" method="post">
     <div class="form-group">
         <label asp-for="ViewerId"></label>
-        <select asp-for="ViewerId" class="form-control" asp-items="ViewBag.ViewerId"></select>
+        <select asp-for="ViewerId" class="form-control" asp-items="ViewBag.ViewerId">
+            <option value="">Оберіть глядача</option>
+        </select>
     </div>
     <div class="form-group">
         <label for="FilmId">Фільм</label>
@@ -47,73 +49,73 @@
 
 @section Scripts {
     <script>
-        $(document).ready(function () {
-    // При зміні фільму отримуємо список сеансів (часів)
-    $("#FilmId").change(function () {
-        var filmId = $(this).val();
-        if (filmId) {
-            $.ajax({
-                url: '@Url.Action("GetSessionsByFilm", "Bookings")',
-                data: { filmId: filmId },
-                success: function (data) {
-                    console.log("Сеанси:", data); // для налагодження
+                $(document).ready(function () {
+
+            // При зміні фільму отримуємо список сеансів (часів)
+            $("#FilmId").change(function () {
+                var filmId = $(this).val();
+                if (filmId) {
+                    $.ajax({
+                        url: '@Url.Action("GetSessionsByFilm", "Bookings")',
+                        data: { filmId: filmId },
+                        success: function (data) {
+                            $("#SessionTime").empty().append('<option value="">Оберіть час</option>');
+                            $.each(data, function (i, session) {
+                                $("#SessionTime").append('<option value="' + session.id + '">' + session.time + '</option>');
+                            });
+                        }
+                    });
+                } else {
                     $("#SessionTime").empty().append('<option value="">Оберіть час</option>');
-                    $.each(data, function (i, session) {
-                        $("#SessionTime").append('<option value="' + session.id + '">' + session.time + '</option>');
-                    });
-                }
-            });
-        } else {
-            $("#SessionTime").empty().append('<option value="">Оберіть час</option>');
-            $("#RowSelect").empty().append('<option value="">Оберіть ряд</option>');
-            $("#SeatId").empty().append('<option value="">Оберіть місце</option>');
-        }
-    });
-    
-    // При зміні сеансу завантажуємо список рядів
-    $("#SessionTime").change(function () {
-        var sessionId = $(this).val();
-        if (sessionId) {
-            $.ajax({
-                url: '@Url.Action("GetRowsBySession", "Bookings")',
-                data: { sessionId: sessionId },
-                success: function (data) {
-                    console.log("Ряди:", data); // для налагодження
                     $("#RowSelect").empty().append('<option value="">Оберіть ряд</option>');
-                    $.each(data, function (i, row) {
-                        $("#RowSelect").append('<option value="' + row + '">' + row + '</option>');
-                    });
-                    // Очищуємо список місць, якщо раніше було вибрано якийсь ряд
                     $("#SeatId").empty().append('<option value="">Оберіть місце</option>');
                 }
             });
-        } else {
-            $("#RowSelect").empty().append('<option value="">Оберіть ряд</option>');
-            $("#SeatId").empty().append('<option value="">Оберіть місце</option>');
-        }
-    });
-    
-    // При зміні ряду завантажуємо список місць у цьому ряду
-    $("#RowSelect").change(function () {
-        var sessionId = $("#SessionTime").val();
-        var row = $(this).val();
-        if (sessionId && row) {
-            $.ajax({
-                url: '@Url.Action("GetSeatsByRow", "Bookings")',
-                data: { sessionId: sessionId, row: row },
-                success: function (data) {
-                    console.log("Місця:", data); // для налагодження
-                    $("#SeatId").empty().append('<option value="">Оберіть місце</option>');
-                    $.each(data, function (i, seat) {
-                        $("#SeatId").append('<option value="' + seat.id + '">' + seat.numberInRow + '</option>');
+
+            // При зміні сеансу завантажуємо список рядів
+            $("#SessionTime").change(function () {
+                var sessionId = $(this).val();
+                if (sessionId) {
+                    $.ajax({
+                        url: '@Url.Action("GetRowsBySession", "Bookings")',
+                        data: { sessionId: sessionId },
+                        success: function (data) {
+                            console.log("Ряди:", data);
+                            $("#RowSelect").empty().append('<option value="">Оберіть ряд</option>');
+                            $.each(data, function (i, row) {
+                                $("#RowSelect").append('<option value="' + row + '">' + row + '</option>');
+                            });
+                            $("#SeatId").empty().append('<option value="">Оберіть місце</option>');
+                        }
                     });
+                } else {
+                    $("#RowSelect").empty().append('<option value="">Оберіть ряд</option>');
+                    $("#SeatId").empty().append('<option value="">Оберіть місце</option>');
                 }
             });
-        } else {
-            $("#SeatId").empty().append('<option value="">Оберіть місце</option>');
-        }
-    });
-});
+
+            // При зміні ряду завантажуємо список місць у цьому ряду
+            $("#RowSelect").change(function () {
+                var sessionId = $("#SessionTime").val();
+                var row = $(this).val();
+                if (sessionId && row) {
+                    $.ajax({
+                        url: '@Url.Action("GetSeatsByRow", "Bookings")',
+                        data: { sessionId: sessionId, row: row },
+                        success: function (data) {
+                            console.log("Місця:", data);
+                            $("#SeatId").empty().append('<option value="">Оберіть місце</option>');
+                            $.each(data, function (i, seat) {
+                                $("#SeatId").append('<option value="' + seat.id + '">' + seat.numberInRow + '</option>');
+                            });
+                        }
+                    });
+                } else {
+                    $("#SeatId").empty().append('<option value="">Оберіть місце</option>');
+                }
+            });
+        });
+
 
     </script>
 }

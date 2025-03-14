@@ -111,12 +111,10 @@ namespace CinemaInfrastructure.Controllers
         {
             // Завантажуємо список фільмів із бази даних
             var films = _context.Films.ToList();
+            var viewers = _context.Viewers.ToList();
             // Передаємо список у ViewBag, щоб у View використовувати його для формування випадаючого списку
             ViewBag.Films = films;
-
-            // Якщо потрібно – завантажуємо дані для інших списків
-            ViewData["ViewerId"] = new SelectList(_context.Viewers, "Id", "Name");
-            // Для сеансів та місць залишаємо порожні або формуємо їх через AJAX
+            ViewData["ViewerId"] = new SelectList(_context.Viewers, "Id", "Name", null);
             return View();
         }
 
@@ -127,7 +125,7 @@ namespace CinemaInfrastructure.Controllers
                 .Where(s => s.Film.Id == filmId)
                 .Select(s => new {
                     s.Id,
-                    Time = s.SessionTime.ToString("dd.MM HH:mm")
+                    Time = s.SessionTime.ToString("dd.MM.yyyy HH:mm")
                 })
                 .ToListAsync();
             return Json(sessions);
