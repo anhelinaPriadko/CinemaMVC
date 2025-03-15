@@ -180,7 +180,7 @@ namespace CinemaInfrastructure.Controllers
 
             if (CheckNameDublication(film.Name))
             {
-                ModelState.AddModelError("Name", "Фільм з таким ім'ям вже існує!");
+                ModelState.AddModelError("Name", "Фільм з такою назвою вже існує!");
             }
 
             if (ModelState.IsValid)
@@ -237,7 +237,7 @@ namespace CinemaInfrastructure.Controllers
 
             if (CheckNameDublication(film.Name))
             {
-                ModelState.AddModelError("Name", "Фільм з таким ім'ям вже існує!");
+                ModelState.AddModelError("Name", "Фільм з такою назвою вже існує!");
             }
 
             if (ModelState.IsValid)

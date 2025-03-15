@@ -7,6 +7,7 @@ namespace CinemaDomain.Model;
 public partial class Film : Entity
 {
     [Required(ErrorMessage = "Поле не повинно бути порожнім!")]
+    [StringLength(30, ErrorMessage = "Назва виробника не може перевищувати 30 символів!")]
     public string Name { get; set; } = null!;
 
     [Required(ErrorMessage = "Поле не повинно бути порожнім!")]

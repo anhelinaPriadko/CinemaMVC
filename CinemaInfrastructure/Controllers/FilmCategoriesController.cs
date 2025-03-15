@@ -64,7 +64,7 @@ namespace CinemaInfrastructure.Controllers
         {
             if (CheckNameDublication(filmCategory.Name))
             {
-                ModelState.AddModelError("Name", "Категорія з таким ім'ям вже існує!");
+                ModelState.AddModelError("Name", "Категорія з такою назвою вже існує!");
             }
 
             if (ModelState.IsValid)
@@ -106,7 +106,7 @@ namespace CinemaInfrastructure.Controllers
 
             if (CheckNameDublication(filmCategory.Name))
             {
-                ModelState.AddModelError("Name", "Категорія з таким ім'ям вже існує!");
+                ModelState.AddModelError("Name", "Категорія з такою назвою вже існує!");
             }
 
             if (ModelState.IsValid)

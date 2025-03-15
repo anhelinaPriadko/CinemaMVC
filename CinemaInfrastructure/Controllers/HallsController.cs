@@ -84,6 +84,11 @@ namespace CinemaInfrastructure.Controllers
             return RedirectToAction("IndexByHall", "Sessions", new { hallId = hall.Id });
         }
 
+        public bool CheckNameDublication(string Name)
+        {
+            return _context.Halls.Any(h => h.Name == Name);
+        }
+
         // GET: Halls/Create
         public IActionResult Create()
         {
@@ -104,6 +109,11 @@ namespace CinemaInfrastructure.Controllers
             hall.HallType = hallType;
             ModelState.Clear();
             TryValidateModel(hallType);
+
+            if(CheckNameDublication(hall.Name))
+            {
+                ModelState.AddModelError("Name", "Зал з такою назвою вже існує!");
+            }
 
             if (ModelState.IsValid)
             {
@@ -151,6 +161,11 @@ namespace CinemaInfrastructure.Controllers
 
             ModelState.Clear();
             TryValidateModel(hall);
+
+            if (CheckNameDublication(hall.Name))
+            {
+                ModelState.AddModelError("Name", "Зал з такою назвою вже існує!");
+            }
 
             if (ModelState.IsValid)
             {

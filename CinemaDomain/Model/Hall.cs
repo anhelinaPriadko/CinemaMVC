@@ -6,10 +6,16 @@ namespace CinemaDomain.Model;
 
 public partial class Hall: Entity
 {
+    [Required(ErrorMessage = "Поле не повинно бути порожнім!")]
+    [StringLength(30, ErrorMessage = "Назва виробника не може перевищувати 30 символів!")]
     public string Name { get; set; } = null!;
 
+    [Required(ErrorMessage = "Поле не повинно бути порожнім!")]
+    [Range(1, 20, ErrorMessage = "Кількість рядів повинна бути від 1 до 20!")]
     public int NumberOfRows { get; set; }
 
+    [Required(ErrorMessage = "Поле не повинно бути порожнім!")]
+    [Range(1, 25, ErrorMessage = "Кількість місць повинна бути від 1 до 25!")]
     public int SeatsInRow { get; set; }
     
     public int HallTypeId { get; set; }

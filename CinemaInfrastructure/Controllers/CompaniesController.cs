@@ -63,7 +63,7 @@ namespace CinemaInfrastructure.Controllers
         {
             if (CheckNameDublication(company.Name))
             {
-                ModelState.AddModelError("Name", "Компанія з таким ім'ям вже існує!");
+                ModelState.AddModelError("Name", "Компанія з такою назвою вже існує!");
             }
 
             if (!ModelState.IsValid) 
@@ -107,7 +107,7 @@ namespace CinemaInfrastructure.Controllers
 
             if (CheckNameDublication(company.Name))
             {
-                ModelState.AddModelError("Name", "Компанія з таким ім'ям вже існує!");
+                ModelState.AddModelError("Name", "Компанія з такою назвою вже існує!");
             }
 
             if (ModelState.IsValid)
