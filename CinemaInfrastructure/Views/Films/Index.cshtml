@@ -6,6 +6,22 @@
     int? companyId = ViewBag.CompanyId as int?;
 }
 
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        @TempData["ErrorMessage"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        @TempData["SuccessMessage"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
 @if (TempData["Message"] != null)
 {
     <div class="alert alert-info">@TempData["Message"]</div>
@@ -47,25 +63,17 @@
     }
     else
     {
-        <a asp-action="Create" class="btn btn-primary">Додати фільм</a>
+        <a class="btn btn-primary" asp-action="Create">Створити новий</a>
     }
 </p>
 <table class="table">
     <thead>
         <tr>
-            <th>
-                @Html.DisplayNameFor(model => model.Name)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.ReleaseDate)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Company)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.FilmCategory)
-            </th>
-            <th></th>
+            <th>Назва</th>
+            <th>Дата виходу</th>
+            <th>Виробник</th>
+            <th>категорія</th>
+            <th>Дії</th>
         </tr>
     </thead>
     <tbody>
@@ -84,14 +92,49 @@
                 @Html.DisplayFor(modelItem => item.FilmCategory.Name)
             </td>
             <td>
-                <a asp-action="Edit" asp-route-id="@item.Id">Edit</a> |
-                <a asp-action="Details" asp-route-id="@item.Id">Details</a> |
-                <a asp-action="DetailsBySessions" asp-route-id="@item.Id">DetailsBySessions</a> |
-                <a asp-action="DetailsByRatings" asp-route-id="@item.Id">DetailsByRatings</a>|
-                <a asp-action="Delete" asp-route-id="@item.Id">Delete</a>
+                <a class="btn btn-warning btn-sm" asp-action="Edit" asp-route-id="@item.Id">Редагувати</a>
+                <a class="btn btn-info btn-sm" asp-action="Details" asp-route-id="@item.Id">Деталі</a>
+                <a class="btn btn-info btn-sm" asp-action="DetailsBySessions" asp-route-id="@item.Id">Сеанси</a>
+                <a class="btn btn-info btn-sm" asp-action="DetailsByRatings" asp-route-id="@item.Id">Відгуки</a>
+                <button class="btn btn-danger btn-sm" onclick="confirmDelete(@item.Id, '@item.Name')">
+                    Видалити
+                </button>
             </td>
         </tr>
 }
     </tbody>
 </table>
+
+
+<!-- Модальне вікно -->
+<div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="deleteModalLabel">Підтвердження видалення</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                Ви дійсно хочете видалити компанію "<span id="filmName"></span>"?
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Ні</button>
+                <form id="deleteForm" method="post">
+                    <button type="submit" class="btn btn-danger">Так, видалити</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function confirmDelete(filmId, filmName)
+    {
+        document.getElementById("filmName").innerText = filmName;
+        document.getElementById("deleteForm").action = "/Films/Delete/" + filmId;
+        var deleteModal = new bootstrap.Modal(document.getElementById('deleteModal'));
+        deleteModal.show();
+    }
+</script>
+
 

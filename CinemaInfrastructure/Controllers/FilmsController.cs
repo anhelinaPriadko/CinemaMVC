@@ -277,10 +277,23 @@ namespace CinemaInfrastructure.Controllers
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
             var film = await _context.Films.FindAsync(id);
-            if (film != null)
+            if (film == null)
             {
-                _context.Films.Remove(film);
+                TempData["ErrorMessage"] = "Фільм не знайдено!";
+                return RedirectToAction("Index");
             }
+
+            var isLinked = await _context.Sessions.AnyAsync(s => s.FilmId == id);
+
+            if(isLinked)
+            {
+                TempData["ErrorMessage"] = "Цей фільм не можна видалити, оскільки він має пов'язані дані!";
+                return RedirectToAction("Index");
+            }
+
+            await _context.FilmRatings.Where(f => f.FilmId == id).ExecuteDeleteAsync();
+
+            _context.Remove(film);
 
             await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));

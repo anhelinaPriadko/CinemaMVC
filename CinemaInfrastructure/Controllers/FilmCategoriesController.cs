@@ -140,13 +140,25 @@ namespace CinemaInfrastructure.Controllers
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
             var filmCategory = await _context.FilmCategories.FindAsync(id);
-            if (filmCategory != null)
+            if (filmCategory == null)
             {
-                _context.FilmCategories.Remove(filmCategory);
+                TempData["ErrorMessage"] = "Категорію не знайдено!";
+                return RedirectToAction("Index");
             }
 
+            var isLinked = await _context.Films.AnyAsync(f => f.FilmCategoryId == id);
+
+            if (isLinked)
+            {
+                TempData["ErrorMessage"] = "Цю категорію не можна видалити, оскільки вона має пов'язані дані!";
+                return RedirectToAction("Index");
+            }
+
+            _context.Remove(filmCategory);
             await _context.SaveChangesAsync();
-            return RedirectToAction(nameof(Index));
+
+            TempData["SuccessMessage"] = $"Категорію \"{filmCategory.Name}\" успішно видалено!";
+            return RedirectToAction("Index");
         }
 
         private bool FilmCategoryExists(int id)

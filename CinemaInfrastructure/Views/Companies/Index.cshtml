@@ -28,7 +28,7 @@
 <table class="table">
     <thead>
         <tr>
-            <th>@Html.DisplayNameFor(model => model.First().Name)</th>
+            <th>Назва</th>
             <th>Дії</th>
         </tr>
     </thead>
@@ -71,7 +71,8 @@
 </div>
 
 <script>
-    function confirmDelete(companyId, companyName) {
+    function confirmDelete(companyId, companyName) 
+    {
         document.getElementById("companyName").innerText = companyName;
         document.getElementById("deleteForm").action = "/Companies/Delete/" + companyId;
         var deleteModal = new bootstrap.Modal(document.getElementById('deleteModal'));
