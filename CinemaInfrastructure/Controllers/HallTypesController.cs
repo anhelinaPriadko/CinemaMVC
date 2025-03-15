@@ -141,11 +141,21 @@ namespace CinemaInfrastructure.Controllers
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
             var hallType = await _context.HallTypes.FindAsync(id);
-            if (hallType != null)
+            if (hallType == null)
             {
-                _context.HallTypes.Remove(hallType);
+                TempData["ErrorMessage"] = "Тип залу не знайдено!";
+                return RedirectToAction("Index");
             }
 
+            var isLinked = await _context.Halls.AnyAsync(h => h.HallTypeId == id);
+
+            if (isLinked)
+            {
+                TempData["ErrorMessage"] = "Цей тип не можна видалити, оскільки він має пов'язані дані!";
+                return RedirectToAction("Index");
+            }
+
+            _context.Remove(hallType);
             await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
         }
