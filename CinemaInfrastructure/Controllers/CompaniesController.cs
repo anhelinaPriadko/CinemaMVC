@@ -105,6 +105,11 @@ namespace CinemaInfrastructure.Controllers
                 return NotFound();
             }
 
+            if (CheckNameDublication(company.Name))
+            {
+                ModelState.AddModelError("Name", "Компанія з таким ім'ям вже існує!");
+            }
+
             if (ModelState.IsValid)
             {
                 try

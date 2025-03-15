@@ -7,7 +7,7 @@ namespace CinemaDomain.Model;
 public partial class FilmCategory: Entity
 {
     [Required(ErrorMessage = "Поле не повинно бути порожнім!")]
-    [Display(Name = "Категорія")]
+    [StringLength(30, ErrorMessage = "Назва категорії не може перевищувати 30 символів!")]
     public string Name { get; set; } = null!;
 
     public virtual ICollection<Film> Films { get; set; } = new List<Film>();

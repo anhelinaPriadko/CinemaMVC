@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using CinemaDomain.Model;
 using CinemaInfrastructure;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory.Database;
 
 namespace CinemaInfrastructure.Controllers
 {
@@ -43,6 +44,11 @@ namespace CinemaInfrastructure.Controllers
             return RedirectToAction("IndexByCategory", "Films", new { categoryId = filmCategory.Id });
         }
 
+        public bool CheckNameDublication(string Name)
+        {
+            return _context.FilmCategories.Any(f => f.Name == Name);
+        }
+
         // GET: FilmCategories/Create
         public IActionResult Create()
         {
@@ -56,6 +62,11 @@ namespace CinemaInfrastructure.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create([Bind("Name,Id")] FilmCategory filmCategory)
         {
+            if (CheckNameDublication(filmCategory.Name))
+            {
+                ModelState.AddModelError("Name", "Категорія з таким ім'ям вже існує!");
+            }
+
             if (ModelState.IsValid)
             {
                 _context.Add(filmCategory);
@@ -91,6 +102,11 @@ namespace CinemaInfrastructure.Controllers
             if (id != filmCategory.Id)
             {
                 return NotFound();
+            }
+
+            if (CheckNameDublication(filmCategory.Name))
+            {
+                ModelState.AddModelError("Name", "Категорія з таким ім'ям вже існує!");
             }
 
             if (ModelState.IsValid)
