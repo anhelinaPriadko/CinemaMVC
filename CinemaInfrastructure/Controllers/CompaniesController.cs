@@ -43,6 +43,11 @@ namespace CinemaInfrastructure.Controllers
             return RedirectToAction("IndexByCompany", "Films", new { companyId = company.Id });
         }
 
+        public bool CheckNameDublication(string Name)
+        {
+            return _context.Companies.Any(m => m.Name == Name);
+        }
+
         // GET: Companies/Create
         public IActionResult Create()
         {
@@ -56,14 +61,21 @@ namespace CinemaInfrastructure.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create([Bind("Name,Id")] Company company)
         {
-            if (ModelState.IsValid)
+            if (CheckNameDublication(company.Name))
             {
-                _context.Add(company);
-                await _context.SaveChangesAsync();
-                return RedirectToAction(nameof(Index));
+                ModelState.AddModelError("Name", "Компанія з таким ім'ям вже існує!");
             }
-            return View(company);
+
+            if (!ModelState.IsValid) 
+            {
+                return View(company);
+            }
+
+            _context.Add(company);
+            await _context.SaveChangesAsync();
+            return RedirectToAction(nameof(Index));
         }
+
 
         // GET: Companies/Edit/5
         public async Task<IActionResult> Edit(int? id)
