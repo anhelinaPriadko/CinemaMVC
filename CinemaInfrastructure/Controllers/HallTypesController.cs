@@ -45,6 +45,11 @@ namespace CinemaInfrastructure.Controllers
             return RedirectToAction("IndexByHallType", "Halls", new { hallTypeId = hallType.Id});
         }
 
+        public bool CheckNameDublication(string Name)
+        {
+            return _context.HallTypes.Any(f => f.Name == Name);
+        }
+
         // GET: HallTypes/Create
         public IActionResult Create()
         {
@@ -58,6 +63,11 @@ namespace CinemaInfrastructure.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create([Bind("Name,Id")] HallType hallType)
         {
+            if(CheckNameDublication(hallType.Name))
+            {
+                ModelState.AddModelError("Name", "Тип з такою назвою вже існує!");
+            }
+
             if (ModelState.IsValid)
             {
                 _context.Add(hallType);
@@ -93,6 +103,11 @@ namespace CinemaInfrastructure.Controllers
             if (id != hallType.Id)
             {
                 return NotFound();
+            }
+
+            if (CheckNameDublication(hallType.Name))
+            {
+                ModelState.AddModelError("Name", "Тип з такою назвою вже існує!");
             }
 
             if (ModelState.IsValid)
