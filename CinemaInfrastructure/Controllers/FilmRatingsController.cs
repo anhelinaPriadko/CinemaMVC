@@ -224,6 +224,7 @@ namespace CinemaInfrastructure.Controllers
             if (filmRating != null)
             {
                 _context.FilmRatings.Remove(filmRating);
+                TempData["SuccessMessage"] = $"Оцінку користувача \"{filmRating.Viewer.Name}\" для фільму \"{filmRating.Film.Name}\" успішно видалено!";
             }
 
             await _context.SaveChangesAsync();

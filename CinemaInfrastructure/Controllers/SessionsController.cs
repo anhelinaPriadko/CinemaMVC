@@ -233,13 +233,28 @@ namespace CinemaInfrastructure.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            var session = await _context.Sessions.FindAsync(id);
-            if (session != null)
+            var session = await _context.Sessions
+                                .Include(s => s.Film)
+                                .FirstOrDefaultAsync(s => s.Id == id);
+            if (session == null)
             {
-                _context.Sessions.Remove(session);
+                TempData["ErrorMessage"] = "Сеанс не знайдено!";
+                return RedirectToAction("Index");
             }
 
+            var isLinked = await _context.Bookings.AnyAsync(b => b.SessionId == id);
+            if(isLinked)
+            {
+                TempData["ErrorMessage"] = "Цей сеанс не можна видалити, оскільки він має пов'язані дані!";
+                return RedirectToAction("Index");
+            }
+
+            string filmName = session.Film.Name;
+            string filmDateTime = session.SessionTime.ToString("dd.MM.yyyy HH.mm");
+            _context.Remove(session);
             await _context.SaveChangesAsync();
+
+            TempData["SuccessMessage"] = $"Сеанс фільму \"{filmName}\" \"{filmDateTime}\" успішно видалено!";
             return RedirectToAction(nameof(Index));
         }
 

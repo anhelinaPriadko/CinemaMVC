@@ -7,29 +7,24 @@
 <h1>Сеанси</h1>
 
 <p>
-    <a asp-action="Create">Створити новий</a>
+    <a class="btn btn-primary" asp-action="Create">Створити новий</a>
 </p>
 <table class="table">
     <thead>
         <tr>
-            <th>
-                @Html.DisplayNameFor(model => model.SessionTime)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Duration)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Film)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Hall)
-            </th>
-            <th></th>
+            <th>Назва фільму</th>
+            <th>Дата</th>
+            <th>Тривалість</th>
+            <th>Зал</th>
+            <th>Дії</th>
         </tr>
     </thead>
     <tbody>
 @foreach (var item in Model) {
         <tr>
+            <td>
+                @Html.DisplayFor(modelItem => item.Film.Name)
+            </td>
             <td>
                 @Html.DisplayFor(modelItem => item.SessionTime)
             </td>
@@ -37,16 +32,15 @@
                 @Html.DisplayFor(modelItem => item.Duration)
             </td>
             <td>
-                @Html.DisplayFor(modelItem => item.Film.Name)
-            </td>
-            <td>
                 @Html.DisplayFor(modelItem => item.Hall.Name)
             </td>
             <td>
-                <a asp-action="Edit" asp-route-id="@item.Id">Edit</a> |
-                <a asp-action="Details" asp-route-id="@item.Id">Details</a> |
-                <a asp-action="DetailsByBookings" asp-route-id="@item.Id">DetailsByBookings</a> |
-                <a asp-action="Delete" asp-route-id="@item.Id">Delete</a>
+                <a class="btn btn-warning btn-sm" asp-action="Edit" asp-route-id="@item.Id">Редагувати</a>
+                <a class="btn btn-info btn-sm" asp-action="Details" asp-route-id="@item.Id">Деталі</a>
+                <a class="btn btn-info btn-sm" asp-action="DetailsByBookings" asp-route-id="@item.Id">Бронювання</a>
+                    <button class="btn btn-danger btn-sm" onclick="confirmDelete('@Url.Action("Delete", "Sessions", new { id = item.Id })', 'фільму @item.Film.Name @item.SessionTime.ToString("dd.MM.yyyy HH.mm")', 'сеанс' )">
+                    Видалити
+                </button>
             </td>
         </tr>
 }
