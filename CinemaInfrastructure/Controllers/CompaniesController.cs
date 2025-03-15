@@ -140,13 +140,25 @@ namespace CinemaInfrastructure.Controllers
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
             var company = await _context.Companies.FindAsync(id);
-            if (company != null)
+            if (company == null)
             {
-                _context.Companies.Remove(company);
+                TempData["ErrorMessage"] = "Компанію не знайдено!";
+                return RedirectToAction("Index");
             }
 
+            var isLinked = await _context.Films.AnyAsync(f => f.CompanyId == id);
+
+            if(isLinked)
+            {
+                TempData["ErrorMessage"] = "Цю компанію не можна видалити, оскільки вона має пов'язані дані!";
+                return RedirectToAction("Index");
+            }
+
+            _context.Remove(company);
             await _context.SaveChangesAsync();
-            return RedirectToAction(nameof(Index));
+
+            TempData["SuccessMessage"] = $"Компанію \"{company.Name}\" успішно видалено!";
+            return RedirectToAction("Index");
         }
 
         private bool CompanyExists(int id)
