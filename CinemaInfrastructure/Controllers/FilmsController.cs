@@ -72,6 +72,11 @@ namespace CinemaInfrastructure.Controllers
         }
 
 
+        public bool CheckNameDublication(string Name)
+        {
+            return _context.Films.Any(f => f.Name == Name);
+        }
+
         // GET: Films/Details/5
         public async Task<IActionResult> Details(int? id)
         {
@@ -173,6 +178,11 @@ namespace CinemaInfrastructure.Controllers
             ModelState.Clear();
             TryValidateModel(film);
 
+            if (CheckNameDublication(film.Name))
+            {
+                ModelState.AddModelError("Name", "Фільм з таким ім'ям вже існує!");
+            }
+
             if (ModelState.IsValid)
             {
                 _context.Add(film);
@@ -224,6 +234,11 @@ namespace CinemaInfrastructure.Controllers
 
             ModelState.Clear();
             TryValidateModel(film);
+
+            if (CheckNameDublication(film.Name))
+            {
+                ModelState.AddModelError("Name", "Фільм з таким ім'ям вже існує!");
+            }
 
             if (ModelState.IsValid)
             {
