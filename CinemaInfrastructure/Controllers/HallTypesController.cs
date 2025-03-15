@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using CinemaDomain.Model;
 using CinemaInfrastructure;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory.Database;
 
 namespace CinemaInfrastructure.Controllers
 {
@@ -157,6 +158,8 @@ namespace CinemaInfrastructure.Controllers
 
             _context.Remove(hallType);
             await _context.SaveChangesAsync();
+
+            TempData["SuccessMessage"] = $"Тип \"{hallType.Name}\" успішно видалено!";
             return RedirectToAction(nameof(Index));
         }
 

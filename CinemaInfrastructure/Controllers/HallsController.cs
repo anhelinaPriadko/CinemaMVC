@@ -9,6 +9,7 @@ using CinemaDomain.Model;
 using CinemaInfrastructure;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using System.Diagnostics;
+using Microsoft.VisualBasic;
 
 namespace CinemaInfrastructure.Controllers
 {
@@ -200,12 +201,25 @@ namespace CinemaInfrastructure.Controllers
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
             var hall = await _context.Halls.FindAsync(id);
-            if (hall != null)
+            if (hall == null)
             {
-                _context.Halls.Remove(hall);
+                TempData["ErrorMessage"] = "Зал не знайдено!";
+                return RedirectToAction("Index");
             }
 
+            var isLinkedSeats = await _context.Seats.AnyAsync(s => s.HallId == id);
+            var isLinkedSessions = await _context.Sessions.AnyAsync(s => s.HallId == id);
+
+            if (isLinkedSeats || isLinkedSessions)
+            {
+                TempData["ErrorMessage"] = "Цей зал не можна видалити, оскільки він має пов'язані дані!";
+                return RedirectToAction("Index");
+            }
+
+            _context.Remove(hall);
             await _context.SaveChangesAsync();
+
+            TempData["SuccessMessage"] = $"Зал \"{hall.Name}\" успішно видалено!";
             return RedirectToAction(nameof(Index));
         }
 

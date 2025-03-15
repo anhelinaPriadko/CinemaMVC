@@ -296,6 +296,8 @@ namespace CinemaInfrastructure.Controllers
             _context.Remove(film);
 
             await _context.SaveChangesAsync();
+
+            TempData["SuccessMessage"] = $"Фільм \"{film.Name}\" успішно видалено!";
             return RedirectToAction(nameof(Index));
         }
 

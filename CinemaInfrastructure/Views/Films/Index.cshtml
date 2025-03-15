@@ -6,22 +6,6 @@
     int? companyId = ViewBag.CompanyId as int?;
 }
 
-@if (TempData["ErrorMessage"] != null)
-{
-    <div class="alert alert-danger alert-dismissible fade show" role="alert">
-        @TempData["ErrorMessage"]
-        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-    </div>
-}
-
-@if (TempData["SuccessMessage"] != null)
-{
-    <div class="alert alert-success alert-dismissible fade show" role="alert">
-        @TempData["SuccessMessage"]
-        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-    </div>
-}
-
 @if (TempData["Message"] != null)
 {
     <div class="alert alert-info">@TempData["Message"]</div>
@@ -96,7 +80,7 @@
                 <a class="btn btn-info btn-sm" asp-action="Details" asp-route-id="@item.Id">Деталі</a>
                 <a class="btn btn-info btn-sm" asp-action="DetailsBySessions" asp-route-id="@item.Id">Сеанси</a>
                 <a class="btn btn-info btn-sm" asp-action="DetailsByRatings" asp-route-id="@item.Id">Відгуки</a>
-                <button class="btn btn-danger btn-sm" onclick="confirmDelete(@item.Id, '@item.Name')">
+                    <button class="btn btn-danger btn-sm" onclick="confirmDelete('@Url.Action("Delete", "Films", new { id = item.Id })', '@item.Name', 'фільм')">
                     Видалити
                 </button>
             </td>
@@ -104,37 +88,5 @@
 }
     </tbody>
 </table>
-
-
-<!-- Модальне вікно -->
-<div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="deleteModalLabel">Підтвердження видалення</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body">
-                Ви дійсно хочете видалити фільм "<span id="filmName"></span>"?
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Ні</button>
-                <form id="deleteForm" method="post">
-                    <button type="submit" class="btn btn-danger">Так, видалити</button>
-                </form>
-            </div>
-        </div>
-    </div>
-</div>
-
-<script>
-    function confirmDelete(filmId, filmName)
-    {
-        document.getElementById("filmName").innerText = filmName;
-        document.getElementById("deleteForm").action = "/Films/Delete/" + filmId;
-        var deleteModal = new bootstrap.Modal(document.getElementById('deleteModal'));
-        deleteModal.show();
-    }
-</script>
 
 
