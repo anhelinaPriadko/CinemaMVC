@@ -316,11 +316,19 @@ namespace CinemaInfrastructure.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int viewerId, int sessionId, int seatId)
         {
-            var booking = await _context.Bookings.FindAsync(viewerId, sessionId, seatId);
+            var booking = await _context.Bookings
+                    .Include(b => b.Viewer)
+                    .Include(b => b.Session)
+                    .Include(b => b.Session.Film)
+                    .FirstOrDefaultAsync(b => b.ViewerId == viewerId && 
+                    b.SessionId == sessionId && b.SeatId == seatId);
+
             if (booking != null)
             {
                 _context.Bookings.Remove(booking);
                 await _context.SaveChangesAsync();
+                TempData["SuccessMessage"] = $"Бронювання користувача \"{booking.Viewer.Name}\"" +
+                    $" на фільм \"{booking.Session.Film.Name}\"  успішно видалено!";
             }
             return RedirectToAction(nameof(Index));
         }
