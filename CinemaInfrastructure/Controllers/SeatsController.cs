@@ -200,12 +200,23 @@ namespace CinemaInfrastructure.Controllers
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
             var seat = await _context.Seats.FindAsync(id);
-            if (seat != null)
+            if (seat == null)
             {
-                _context.Seats.Remove(seat);
+                TempData["ErrorMessage"] = "Місце не знайдено!";
+                return RedirectToAction("Index");
             }
 
+            var isLinked = await _context.Bookings.AnyAsync(b => b.SeatId == id);
+            if(isLinked)
+            {
+                TempData["ErrorMessage"] = "Це місце не можна видалити, оскільки воно має пов'язані дані!";
+                return RedirectToAction("Index");
+            }
+
+            _context.Remove(seat);
             await _context.SaveChangesAsync();
+
+            TempData["SuccessMessage"] = $"Місце \"{seat.NumberInRow}\" ряду \"{seat.Row}\" успішно видалено!";
             return RedirectToAction(nameof(Index));
         }
 
