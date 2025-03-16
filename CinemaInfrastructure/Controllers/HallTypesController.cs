@@ -105,32 +105,39 @@ namespace CinemaInfrastructure.Controllers
                 return NotFound();
             }
 
-            if (CheckNameDublication(hallType.Name))
+            var existingHallType = await _context.HallTypes.FindAsync(id);
+            if (existingHallType == null)
+                return NotFound();
+
+            if (existingHallType.Name != hallType.Name && CheckNameDublication(hallType.Name))
             {
                 ModelState.AddModelError("Name", "Тип з такою назвою вже існує!");
             }
 
-            if (ModelState.IsValid)
+            if (!ModelState.IsValid)
             {
-                try
-                {
-                    _context.Update(hallType);
-                    await _context.SaveChangesAsync();
-                }
-                catch (DbUpdateConcurrencyException)
-                {
-                    if (!HallTypeExists(hallType.Id))
-                    {
-                        return NotFound();
-                    }
-                    else
-                    {
-                        throw;
-                    }
-                }
-                return RedirectToAction(nameof(Index));
+                return View(hallType);
             }
-            return View(hallType);
+
+            try
+            {
+                // 4. Оновлюємо дані
+                existingHallType.Name = hallType.Name;
+                _context.Update(existingHallType);
+                await _context.SaveChangesAsync();
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                if (!HallTypeExists(hallType.Id))
+                {
+                    return NotFound();
+                }
+                else
+                {
+                    throw;
+                }
+            }
+            return RedirectToAction(nameof(Index));
         }
 
         // GET: HallTypes/Delete/5

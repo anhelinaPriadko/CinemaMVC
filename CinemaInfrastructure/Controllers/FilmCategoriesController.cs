@@ -8,6 +8,8 @@ using Microsoft.EntityFrameworkCore;
 using CinemaDomain.Model;
 using CinemaInfrastructure;
 using static Microsoft.EntityFrameworkCore.DbLoggerCategory.Database;
+using Microsoft.VisualBasic;
+using Microsoft.EntityFrameworkCore.Query.SqlExpressions;
 
 namespace CinemaInfrastructure.Controllers
 {
@@ -104,32 +106,39 @@ namespace CinemaInfrastructure.Controllers
                 return NotFound();
             }
 
-            if (CheckNameDublication(filmCategory.Name))
+            var existingFilmCategory = await _context.FilmCategories.FindAsync(id);
+            if (existingFilmCategory == null)
+                return NotFound();
+
+            if (existingFilmCategory.Name != filmCategory.Name && CheckNameDublication(filmCategory.Name))
             {
-                ModelState.AddModelError("Name", "Категорія з такою назвою вже існує!");
+                ModelState.AddModelError("Name", "Тип з такою назвою вже існує!");
             }
 
-            if (ModelState.IsValid)
+            if (!ModelState.IsValid)
             {
-                try
-                {
-                    _context.Update(filmCategory);
-                    await _context.SaveChangesAsync();
-                }
-                catch (DbUpdateConcurrencyException)
-                {
-                    if (!FilmCategoryExists(filmCategory.Id))
-                    {
-                        return NotFound();
-                    }
-                    else
-                    {
-                        throw;
-                    }
-                }
-                return RedirectToAction(nameof(Index));
+                return View(filmCategory);
             }
-            return View(filmCategory);
+
+            try
+            {
+                // 4. Оновлюємо дані
+                existingFilmCategory.Name = filmCategory.Name;
+                _context.Update(existingFilmCategory);
+                await _context.SaveChangesAsync();
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                if (!FilmCategoryExists(filmCategory.Id))
+                {
+                    return NotFound();
+                }
+                else
+                {
+                    throw;
+                }
+            }
+            return RedirectToAction(nameof(Index));
         }
 
         // GET: FilmCategories/Delete/5
