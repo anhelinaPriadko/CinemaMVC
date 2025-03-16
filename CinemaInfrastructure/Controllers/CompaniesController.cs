@@ -105,7 +105,7 @@ namespace CinemaInfrastructure.Controllers
                 return NotFound();
             }
 
-            var existingCompany = await _context.FilmCategories.FindAsync(id);
+            var existingCompany = await _context.Companies.FindAsync(id);
             if (existingCompany == null)
                 return NotFound();
 
@@ -121,7 +121,6 @@ namespace CinemaInfrastructure.Controllers
 
             try
             {
-                // 4. Оновлюємо дані
                 existingCompany.Name = company.Name;
                 _context.Update(existingCompany);
                 await _context.SaveChangesAsync();

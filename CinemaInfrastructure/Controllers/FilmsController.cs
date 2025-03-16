@@ -8,6 +8,7 @@ using Microsoft.EntityFrameworkCore;
 using CinemaDomain.Model;
 using CinemaInfrastructure;
 using System.Runtime.InteropServices;
+using Microsoft.VisualBasic;
 
 namespace CinemaInfrastructure.Controllers
 {
@@ -232,10 +233,16 @@ namespace CinemaInfrastructure.Controllers
             film.FilmCategory = filmCategory;
             film.Company = company;
 
+            film.Company = company;
+            film.FilmCategory = filmCategory;
             ModelState.Clear();
             TryValidateModel(film);
 
-            if (CheckNameDublication(film.Name))
+            var existingFilm = await _context.Films.FindAsync(id);
+            if (existingFilm == null)
+                return NotFound();
+
+            if (existingFilm.Name != film.Name && CheckNameDublication(film.Name))
             {
                 ModelState.AddModelError("Name", "Фільм з такою назвою вже існує!");
             }
@@ -244,7 +251,12 @@ namespace CinemaInfrastructure.Controllers
             {
                 try
                 {
-                    _context.Update(film);
+                    existingFilm.Name = film.Name;
+                    existingFilm.CompanyId = film.CompanyId;
+                    existingFilm.Company = film.Company;
+                    existingFilm.FilmCategoryId = film.FilmCategoryId;
+                    existingFilm.FilmCategory = film.FilmCategory;
+                    _context.Update(existingFilm);
                     await _context.SaveChangesAsync();
                 }
                 catch (DbUpdateConcurrencyException)
