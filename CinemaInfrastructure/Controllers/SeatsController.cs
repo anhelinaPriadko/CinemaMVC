@@ -102,7 +102,7 @@ namespace CinemaInfrastructure.Controllers
 
             seat.Hall = hall;
             ModelState.Clear();
-            TryValidateModel(hall);
+            TryValidateModel(seat);
 
             if (ModelState.IsValid)
             {
