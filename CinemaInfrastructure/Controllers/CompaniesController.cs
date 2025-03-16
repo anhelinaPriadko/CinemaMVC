@@ -105,32 +105,39 @@ namespace CinemaInfrastructure.Controllers
                 return NotFound();
             }
 
-            if (CheckNameDublication(company.Name))
+            var existingCompany = await _context.FilmCategories.FindAsync(id);
+            if (existingCompany == null)
+                return NotFound();
+
+            if (existingCompany.Name != company.Name && CheckNameDublication(company.Name))
             {
-                ModelState.AddModelError("Name", "Компанія з такою назвою вже існує!");
+                ModelState.AddModelError("Name", "Виробник з такою назвою вже існує!");
             }
 
-            if (ModelState.IsValid)
+            if (!ModelState.IsValid)
             {
-                try
-                {
-                    _context.Update(company);
-                    await _context.SaveChangesAsync();
-                }
-                catch (DbUpdateConcurrencyException)
-                {
-                    if (!CompanyExists(company.Id))
-                    {
-                        return NotFound();
-                    }
-                    else
-                    {
-                        throw;
-                    }
-                }
-                return RedirectToAction(nameof(Index));
+                return View(company);
             }
-            return View(company);
+
+            try
+            {
+                // 4. Оновлюємо дані
+                existingCompany.Name = company.Name;
+                _context.Update(existingCompany);
+                await _context.SaveChangesAsync();
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                if (!CompanyExists(company.Id))
+                {
+                    return NotFound();
+                }
+                else
+                {
+                    throw;
+                }
+            }
+            return RedirectToAction(nameof(Index));
         }
 
         // GET: Companies/Delete/5

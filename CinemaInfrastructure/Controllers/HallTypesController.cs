@@ -121,7 +121,6 @@ namespace CinemaInfrastructure.Controllers
 
             try
             {
-                // 4. Оновлюємо дані
                 existingHallType.Name = hallType.Name;
                 _context.Update(existingHallType);
                 await _context.SaveChangesAsync();

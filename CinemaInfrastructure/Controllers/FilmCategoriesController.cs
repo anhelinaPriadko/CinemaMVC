@@ -112,7 +112,7 @@ namespace CinemaInfrastructure.Controllers
 
             if (existingFilmCategory.Name != filmCategory.Name && CheckNameDublication(filmCategory.Name))
             {
-                ModelState.AddModelError("Name", "Тип з такою назвою вже існує!");
+                ModelState.AddModelError("Name", "Категорія з такою назвою вже існує!");
             }
 
             if (!ModelState.IsValid)
@@ -122,7 +122,6 @@ namespace CinemaInfrastructure.Controllers
 
             try
             {
-                // 4. Оновлюємо дані
                 existingFilmCategory.Name = filmCategory.Name;
                 _context.Update(existingFilmCategory);
                 await _context.SaveChangesAsync();
