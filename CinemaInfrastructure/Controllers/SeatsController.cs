@@ -73,6 +73,7 @@ namespace CinemaInfrastructure.Controllers
 
             var seat = await _context.Seats
                 .Include(s => s.Hall)
+                .Include(s => s.Hall.HallType)
                 .FirstOrDefaultAsync(m => m.Id == id);
             if (seat == null)
             {
@@ -87,6 +88,12 @@ namespace CinemaInfrastructure.Controllers
         {
             ViewData["HallId"] = new SelectList(_context.Halls, "Id", "Name");
             return View();
+        }
+
+        private bool checkForDublications(int hallId, int rows, int numberInRow)
+        {
+            return _context.Seats
+                .Any(s => s.HallId == hallId && s.Row == rows && s.NumberInRow == numberInRow);
         }
 
         // POST: Seats/Create
@@ -104,6 +111,21 @@ namespace CinemaInfrastructure.Controllers
             ModelState.Clear();
             TryValidateModel(seat);
 
+            if(checkForDublications(seat.HallId, seat.Row, seat.NumberInRow))
+            {
+                ModelState.AddModelError("", "Таке місце в цьому залі вже існує!");
+            }
+
+            if(seat.Row > seat.Hall.NumberOfRows)
+            {
+                ModelState.AddModelError("Row", "Номер ряду не може перевищувати кількість рядів у залі!");
+            }
+
+            if (seat.NumberInRow > seat.Hall.SeatsInRow)
+            {
+                ModelState.AddModelError("NumberInRow", "Номер місця не може перевищувати кількість місць у ряду!");
+            }
+
             if (ModelState.IsValid)
             {
                 _context.Add(seat);
@@ -114,66 +136,66 @@ namespace CinemaInfrastructure.Controllers
             return View(seat);
         }
 
-        // GET: Seats/Edit/5
-        public async Task<IActionResult> Edit(int? id)
-        {
-            if (id == null)
-            {
-                return NotFound();
-            }
+        //// GET: Seats/Edit/5
+        //public async Task<IActionResult> Edit(int? id)
+        //{
+        //    if (id == null)
+        //    {
+        //        return NotFound();
+        //    }
 
-            var seat = await _context.Seats.FindAsync(id);
-            if (seat == null)
-            {
-                return NotFound();
-            }
-            ViewData["HallId"] = new SelectList(_context.Halls, "Id", "Name", seat.HallId);
-            return View(seat);
-        }
+        //    var seat = await _context.Seats.FindAsync(id);
+        //    if (seat == null)
+        //    {
+        //        return NotFound();
+        //    }
+        //    ViewData["HallId"] = new SelectList(_context.Halls, "Id", "Name", seat.HallId);
+        //    return View(seat);
+        //}
 
-        // POST: Seats/Edit/5
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("HallId,Row,NumberInRow,Id")] Seat seat)
-        {
-            if (id != seat.Id)
-            {
-                return NotFound();
-            }
+        //// POST: Seats/Edit/5
+        //// To protect from overposting attacks, enable the specific properties you want to bind to.
+        //// For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
+        //[HttpPost]
+        //[ValidateAntiForgeryToken]
+        //public async Task<IActionResult> Edit(int id, [Bind("HallId,Row,NumberInRow,Id")] Seat seat)
+        //{
+        //    if (id != seat.Id)
+        //    {
+        //        return NotFound();
+        //    }
 
-            Hall hall = await _context.Halls
-                .Include(h => h.HallType)
-                .FirstOrDefaultAsync(h => h.Id == seat.HallId);
-            seat.Hall = hall;
+        //    Hall hall = await _context.Halls
+        //        .Include(h => h.HallType)
+        //        .FirstOrDefaultAsync(h => h.Id == seat.HallId);
+        //    seat.Hall = hall;
 
-            ModelState.Clear();
-            TryValidateModel(seat);
+        //    ModelState.Clear();
+        //    TryValidateModel(seat);
 
-            if (ModelState.IsValid)
-            {
-                try
-                {
-                    _context.Update(seat);
-                    await _context.SaveChangesAsync();
-                }
-                catch (DbUpdateConcurrencyException)
-                {
-                    if (!SeatExists(seat.Id))
-                    {
-                        return NotFound();
-                    }
-                    else
-                    {
-                        throw;
-                    }
-                }
-                return RedirectToAction(nameof(Index));
-            }
-            ViewData["HallId"] = new SelectList(_context.Halls, "Id", "Name", seat.HallId);
-            return View(seat);
-        }
+        //    if (ModelState.IsValid)
+        //    {
+        //        try
+        //        {
+        //            _context.Update(seat);
+        //            await _context.SaveChangesAsync();
+        //        }
+        //        catch (DbUpdateConcurrencyException)
+        //        {
+        //            if (!SeatExists(seat.Id))
+        //            {
+        //                return NotFound();
+        //            }
+        //            else
+        //            {
+        //                throw;
+        //            }
+        //        }
+        //        return RedirectToAction(nameof(Index));
+        //    }
+        //    ViewData["HallId"] = new SelectList(_context.Halls, "Id", "Name", seat.HallId);
+        //    return View(seat);
+        //}
 
         // GET: Seats/Delete/5
         public async Task<IActionResult> Delete(int? id)

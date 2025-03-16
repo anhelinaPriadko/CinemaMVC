@@ -31,7 +31,6 @@
                 @Html.DisplayFor(modelItem => item.Hall.Name)
             </td>
             <td>
-                <a class="btn btn-warning btn-sm" asp-action="Edit" asp-route-id="@item.Id">Редагувати</a>
                 <a class="btn btn-info btn-sm" asp-action="DetailsByBookings" asp-route-id="@item.Id">Бронювання</a>
                     <button class="btn btn-danger btn-sm" onclick="confirmDelete('@Url.Action("Delete", "Seats", new { id = item.Id })', 'ряду @item.Row', 'місце @item.NumberInRow')">
                     Видалити

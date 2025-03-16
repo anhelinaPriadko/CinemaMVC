@@ -23,8 +23,15 @@ namespace CinemaInfrastructure.Controllers
         public async Task<IActionResult> Index()
         {
             var cinemaContext = _context.Bookings.Include(b => b.Seat)
+                .Include(b => b.Seat)
+                    .ThenInclude(s => s.Hall)
+                        .ThenInclude(h => h.HallType)
                 .Include(b => b.Session)
-                .Include(b => b.Session.Film)
+                    .ThenInclude(s => s.Film)
+                        .ThenInclude(f => f.Company)
+                .Include(b => b.Session)
+                    .ThenInclude(s => s.Film)
+                        .ThenInclude(f => f.FilmCategory)
                 .Include(b => b.Viewer);
             return View(await cinemaContext.ToListAsync());
         }
@@ -36,7 +43,16 @@ namespace CinemaInfrastructure.Controllers
                 return NotFound();
 
             var bookings = await _context.Bookings.Where(b => b.SessionId == sessionId)
-                .Include(b => b.Seat).Include(b => b.Session).Include(b => b.Viewer)
+                .Include(b => b.Seat)
+                    .ThenInclude(s => s.Hall)
+                        .ThenInclude(h => h.HallType)
+                .Include(b => b.Session)
+                    .ThenInclude(s => s.Film)
+                        .ThenInclude(f => f.Company)
+                .Include(b => b.Session)
+                    .ThenInclude(s => s.Film)
+                        .ThenInclude(f => f.FilmCategory)
+                .Include(b => b.Viewer)
                 .ToListAsync();
 
             return View("Index", bookings);
@@ -49,7 +65,16 @@ namespace CinemaInfrastructure.Controllers
                 return NotFound();
 
             var bookings = await _context.Bookings.Where(b => b.ViewerId == viewerId)
-                .Include(b => b.Seat).Include(b => b.Session).Include(b => b.Viewer)
+                .Include(b => b.Seat)
+                    .ThenInclude(s => s.Hall)
+                        .ThenInclude(h => h.HallType)
+                .Include(b => b.Session)
+                    .ThenInclude(s => s.Film)
+                        .ThenInclude(f => f.Company)
+                .Include(b => b.Session)
+                    .ThenInclude(s => s.Film)
+                        .ThenInclude(f => f.FilmCategory)
+                .Include(b => b.Viewer)
                 .ToListAsync();
 
             if (bookings.Count() == 0)
@@ -65,7 +90,16 @@ namespace CinemaInfrastructure.Controllers
                 return NotFound();
 
             var bookings = await _context.Bookings.Where(b => b.SeatId == seatId)
-                .Include(b => b.Seat).Include(b => b.Session).Include(b => b.Viewer)
+                .Include(b => b.Seat)
+                    .ThenInclude(s => s.Hall)
+                        .ThenInclude(h => h.HallType)
+                .Include(b => b.Session)
+                    .ThenInclude(s => s.Film)
+                        .ThenInclude(f => f.Company)
+                .Include(b => b.Session)
+                    .ThenInclude(s => s.Film)
+                        .ThenInclude(f => f.FilmCategory)
+                .Include(b => b.Viewer)
                 .ToListAsync();
 
 
