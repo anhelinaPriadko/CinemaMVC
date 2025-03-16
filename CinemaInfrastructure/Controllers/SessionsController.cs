@@ -22,7 +22,13 @@ namespace CinemaInfrastructure.Controllers
         // GET: Sessions
         public async Task<IActionResult> Index()
         {
-            var cinemaContext = _context.Sessions.Include(s => s.Film).Include(s => s.Hall);
+            var cinemaContext = _context.Sessions
+                .Include(s => s.Film)
+                .ThenInclude(f => f.Company)
+                .Include(s => s.Film)
+                .ThenInclude(f => f.FilmCategory)
+                .Include(s => s.Hall)
+                .ThenInclude(h => h.HallType);
             return View(await cinemaContext.ToListAsync());
         }
 
@@ -33,6 +39,12 @@ namespace CinemaInfrastructure.Controllers
                 return NotFound();
 
             var sessions = await _context.Sessions.Where(s => s.HallId == hallId)
+                .Include(s => s.Film)
+                .ThenInclude(f => f.Company)
+                .Include(s => s.Film)
+                .ThenInclude(f => f.FilmCategory)
+                .Include(s => s.Hall)
+                .ThenInclude(h => h.HallType)
                 .ToListAsync();
 
             if(sessions.Count() == 0)
@@ -48,6 +60,12 @@ namespace CinemaInfrastructure.Controllers
                 return NotFound();
 
             var sessions = await _context.Sessions.Where(s => s.FilmId == filmId)
+                .Include(s => s.Film)
+                .ThenInclude(f => f.Company)
+                .Include(s => s.Film)
+                .ThenInclude(f => f.FilmCategory)
+                .Include(s => s.Hall)
+                .ThenInclude(h => h.HallType)
                 .ToListAsync();
 
             if (sessions.Count() == 0)
@@ -67,7 +85,11 @@ namespace CinemaInfrastructure.Controllers
 
             var session = await _context.Sessions
                 .Include(s => s.Film)
+                .ThenInclude(f => f.Company)
+                .Include(s => s.Film)
+                .ThenInclude(f => f.FilmCategory)
                 .Include(s => s.Hall)
+                .ThenInclude(h => h.HallType)
                 .FirstOrDefaultAsync(m => m.Id == id);
             if (session == null)
             {
@@ -86,7 +108,11 @@ namespace CinemaInfrastructure.Controllers
 
             var session = await _context.Sessions
                 .Include(s => s.Film)
+                .ThenInclude(f => f.Company)
+                .Include(s => s.Film)
+                .ThenInclude(f => f.FilmCategory)
                 .Include(s => s.Hall)
+                .ThenInclude(h => h.HallType)
                 .FirstOrDefaultAsync(m => m.Id == id);
             if (session == null)
             {
