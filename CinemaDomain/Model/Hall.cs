@@ -18,6 +18,7 @@ public partial class Hall: Entity
     [Range(1, 25, ErrorMessage = "Кількість місць повинна бути від 1 до 25!")]
     public int SeatsInRow { get; set; }
     
+    [Required(ErrorMessage = "Поле не повинно бути порожнім!")]
     public int HallTypeId { get; set; }
 
     public virtual HallType HallType { get; set; }

@@ -122,6 +122,54 @@ namespace CinemaInfrastructure.Controllers
             return RedirectToAction("IndexBySessions", "Bookings", new { sessionId = session.Id});
         }
 
+        private bool checkTimeDuration(int hallId, DateTime sessionTime, int duration)
+        {
+            var existingSessions = _context.Sessions
+                .Where(s => s.HallId == hallId && s.SessionTime.Date == sessionTime.Date)
+                .OrderBy(s => s.SessionTime)
+                .ToList(); // Завантажуємо всі сеанси в пам’ять
+
+            DateTime newSessionEnd = sessionTime.AddMinutes(duration);
+
+            // Знаходимо найближчий попередній сеанс
+            var previousSession = existingSessions.LastOrDefault(s => s.SessionTime < sessionTime);
+
+            // Знаходимо найближчий наступний сеанс
+            var nextSession = existingSessions.FirstOrDefault(s => s.SessionTime > sessionTime);
+
+            // Перевіряємо, чи новий сеанс перетинається з попереднім
+            if (previousSession != null)
+            {
+                DateTime prevSessionEnd = previousSession.SessionTime.AddMinutes(previousSession.Duration);
+                if (sessionTime < prevSessionEnd)
+                {
+                    return false; // Конфлікт із попереднім сеансом
+                }
+            }
+
+            // Перевіряємо, чи новий сеанс перетинається з наступним
+            if (nextSession != null)
+            {
+                DateTime nextSessionStart = nextSession.SessionTime;
+                if (newSessionEnd > nextSessionStart)
+                {
+                    return false; // Конфлікт із наступним сеансом
+                }
+            }
+
+            return true; // Сеанс можна додати
+        }
+
+        private bool checkClosingHours(DateTime sessionTime, int duration, TimeOnly startTime, TimeOnly endTime)
+        {
+            if (sessionTime.TimeOfDay > endTime.ToTimeSpan() || sessionTime.TimeOfDay < startTime.ToTimeSpan())
+                return false;
+
+            if (sessionTime.AddMinutes(duration).TimeOfDay > endTime.ToTimeSpan())
+                return false;
+
+            return true;
+        }
 
         // GET: Sessions/Create
         public IActionResult Create()
@@ -152,6 +200,12 @@ namespace CinemaInfrastructure.Controllers
 
             ModelState.Clear();
             TryValidateModel(session);
+
+            if(!checkTimeDuration(session.HallId, session.SessionTime, session.Duration))
+                ModelState.AddModelError("", "Неможливо додати сеанс! Неправильно обрано час початку та тривалість!");
+
+            if(!checkClosingHours(session.SessionTime, session.Duration, new TimeOnly(8, 0), new TimeOnly(22,0)))
+                ModelState.AddModelError("", "Сеанс поза робочими годинами кінотеатру!");
 
             if (ModelState.IsValid)
             {
