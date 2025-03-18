@@ -5,36 +5,50 @@
 }
 
 <h1>Створити</h1>
-
 <h4>фільм</h4>
 <hr />
+
 <div class="row">
     <div class="col-md-4">
-        <form asp-action="Create" , method="post">
+        <!-- Пам'ятайте: method="post" без коми, атрибут asp-action="Create" -->
+        <form asp-action="Create" method="post">
+
+            <!-- Виводить помилки, які не прив'язані до конкретного поля -->
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
             <div class="form-group">
                 <label asp-for="Name" class="control-label"></label>
                 <input asp-for="Name" class="form-control" />
                 <span asp-validation-for="Name" class="text-danger"></span>
             </div>
+
             <div class="form-group">
                 <label asp-for="CompanyId" class="control-label"></label>
-                <select asp-for="CompanyId" class ="form-control" asp-items="ViewBag.CompanyId"></select>
+                <!-- Зверніть увагу, що asp-items отримує SelectList -->
+                <select asp-for="CompanyId" class="form-control"
+                        asp-items="@(ViewBag.CompanyId as SelectList)"></select>
+                <span asp-validation-for="CompanyId" class="text-danger"></span>
             </div>
+
             <div class="form-group">
                 <label asp-for="FilmCategoryId" class="control-label"></label>
-                <select asp-for="FilmCategoryId" class ="form-control" asp-items="ViewBag.FilmCategoryId"></select>
+                <select asp-for="FilmCategoryId" class="form-control"
+                        asp-items="@(ViewBag.FilmCategoryId as SelectList)"></select>
+                <span asp-validation-for="FilmCategoryId" class="text-danger"></span>
             </div>
+
             <div class="form-group">
                 <label asp-for="ReleaseDate" class="control-label"></label>
                 <input asp-for="ReleaseDate" class="form-control" />
                 <span asp-validation-for="ReleaseDate" class="text-danger"></span>
             </div>
+
             <div class="form-group">
                 <label asp-for="Description" class="control-label"></label>
                 <input asp-for="Description" class="form-control" />
                 <span asp-validation-for="Description" class="text-danger"></span>
             </div>
+
             <div class="form-group">
                 <input type="submit" value="Create" class="btn btn-primary" />
             </div>
@@ -47,5 +61,8 @@
 </div>
 
 @section Scripts {
-    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    <!-- Підключення скриптів валідації (jQuery Validation) -->
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
 }

@@ -141,12 +141,15 @@ namespace CinemaInfrastructure.Controllers
         public IActionResult Create(int? categoryId, int? companyId)
         {
             ViewData["CompanyId"] = new SelectList(_context.Companies, "Id", "Name");
+            // Ви зберігаєте SelectList у ViewData["FilmCategoryId"]
             ViewData["FilmCategoryId"] = new SelectList(_context.FilmCategories, "Id", "Name");
 
+            // Якщо переданий categoryId, ви зберігаєте його у ViewBag.FilmCategoryId
             if (categoryId != null)
             {
-                ViewBag.CategoryId = categoryId;
+                ViewBag.FilmCategoryId = categoryId; // <-- тут затирається SelectList
             }
+
 
             if (companyId != null)
             {
@@ -186,7 +189,7 @@ namespace CinemaInfrastructure.Controllers
 
             if (ModelState.IsValid)
             {
-                _context.Add(film);
+                _context.Films.Add(film);
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }

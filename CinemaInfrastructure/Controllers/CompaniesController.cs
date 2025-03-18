@@ -73,10 +73,10 @@ namespace CinemaInfrastructure.Controllers
 
             _context.Add(company);
             await _context.SaveChangesAsync();
+
+
             return RedirectToAction(nameof(Index));
         }
-
-
         // GET: Companies/Edit/5
         public async Task<IActionResult> Edit(int? id)
         {
