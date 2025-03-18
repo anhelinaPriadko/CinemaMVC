@@ -6,8 +6,6 @@
     <h1 class="display-3">DreamScreen</h1>
 </div>
 
-<!-- Обгортка, що вирівнює все в один рядок по центру -->
-
 <div class="row">
     <div class="col-6">
         <div id="countByType"></div>
@@ -24,7 +22,6 @@
         google.charts.setOnLoadCallback(drawCharts);
 
         function drawCharts() {
-            // Діаграма №1 (за жанрами)
             fetch('/api/values/countByType')
                 .then(response => response.json())
                 .then(data => {
@@ -59,7 +56,6 @@
                     console.error('Error loading chart data (countByType):', error);
                 });
 
-            // Діаграма №2 (за залами)
             fetch('/api/values/countByHalls')
                 .then(response => response.json())
                 .then(data => {

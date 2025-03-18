@@ -127,37 +127,32 @@ namespace CinemaInfrastructure.Controllers
             var existingSessions = _context.Sessions
                 .Where(s => s.HallId == hallId && s.SessionTime.Date == sessionTime.Date)
                 .OrderBy(s => s.SessionTime)
-                .ToList(); // Завантажуємо всі сеанси в пам’ять
+                .ToList();
 
             DateTime newSessionEnd = sessionTime.AddMinutes(duration);
-
-            // Знаходимо найближчий попередній сеанс
             var previousSession = existingSessions.LastOrDefault(s => s.SessionTime < sessionTime);
 
-            // Знаходимо найближчий наступний сеанс
             var nextSession = existingSessions.FirstOrDefault(s => s.SessionTime > sessionTime);
 
-            // Перевіряємо, чи новий сеанс перетинається з попереднім
             if (previousSession != null)
             {
                 DateTime prevSessionEnd = previousSession.SessionTime.AddMinutes(previousSession.Duration);
                 if (sessionTime < prevSessionEnd)
                 {
-                    return false; // Конфлікт із попереднім сеансом
+                    return false;
                 }
             }
 
-            // Перевіряємо, чи новий сеанс перетинається з наступним
             if (nextSession != null)
             {
                 DateTime nextSessionStart = nextSession.SessionTime;
                 if (newSessionEnd > nextSessionStart)
                 {
-                    return false; // Конфлікт із наступним сеансом
+                    return false;
                 }
             }
 
-            return true; // Сеанс можна додати
+            return true; 
         }
 
         private bool checkClosingHours(DateTime sessionTime, int duration, TimeOnly startTime, TimeOnly endTime)
