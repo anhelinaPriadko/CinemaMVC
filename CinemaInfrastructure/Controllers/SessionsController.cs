@@ -124,8 +124,14 @@ namespace CinemaInfrastructure.Controllers
 
         private bool checkTimeDuration(int hallId, DateTime sessionTime, int duration)
         {
+            // Відсікаємо час, щоб отримати "початок доби"
+            DateTime day = sessionTime.Date;
+            DateTime nextDay = day.AddDays(1);
+
             var existingSessions = _context.Sessions
-                .Where(s => s.HallId == hallId && s.SessionTime.Date == sessionTime.Date)
+                .Where(s => s.HallId == hallId
+                    && s.SessionTime >= day       // початок дня
+                    && s.SessionTime < nextDay)   // початок наступного дня
                 .OrderBy(s => s.SessionTime)
                 .ToList();
 
@@ -195,6 +201,13 @@ namespace CinemaInfrastructure.Controllers
 
             ModelState.Clear();
             TryValidateModel(session);
+
+            if (!ModelState.IsValid)
+            {
+                ViewData["FilmId"] = new SelectList(_context.Films, "Id", "Name", session.FilmId);
+                ViewData["HallId"] = new SelectList(_context.Halls, "Id", "Name", session.HallId);
+                return View(session);
+            }
 
             if(!checkTimeDuration(session.HallId, session.SessionTime, session.Duration))
                 ModelState.AddModelError("", "Неможливо додати сеанс! Неправильно обрано час початку та тривалість!");

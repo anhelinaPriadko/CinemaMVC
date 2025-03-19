@@ -9,6 +9,7 @@ using CinemaDomain.Model;
 using CinemaInfrastructure;
 using System.Runtime.InteropServices;
 using Microsoft.VisualBasic;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
 
 namespace CinemaInfrastructure.Controllers
 {
@@ -143,24 +144,7 @@ namespace CinemaInfrastructure.Controllers
             ViewData["CompanyId"] = new SelectList(_context.Companies, "Id", "Name");
             // Ви зберігаєте SelectList у ViewData["FilmCategoryId"]
             ViewData["FilmCategoryId"] = new SelectList(_context.FilmCategories, "Id", "Name");
-
-            // Якщо переданий categoryId, ви зберігаєте його у ViewBag.FilmCategoryId
-            if (categoryId != null)
-            {
-                ViewBag.FilmCategoryId = categoryId; // <-- тут затирається SelectList
-            }
-
-
-            if (companyId != null)
-            {
-                ViewBag.CompanyId = companyId;
-            }
-
-            return View(new Film
-            {
-                FilmCategoryId = categoryId ?? 0,
-                CompanyId = companyId ?? 0
-            });
+            return View();
         }
 
         // POST: Films/Create
@@ -170,10 +154,10 @@ namespace CinemaInfrastructure.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create([Bind("CompanyId,FilmCategoryId,ReleaseDate,Description,Name,Id")] Film film)
         {
-            FilmCategory filmCategory = _context.FilmCategories.Include(f => f.Films)
+            FilmCategory filmCategory = _context.FilmCategories
                 .FirstOrDefault(f => f.Id == film.FilmCategoryId);
 
-            Company company = _context.Companies.Include(c => c.Films)
+            Company company = _context.Companies
                 .FirstOrDefault(c => c.Id == film.CompanyId);
 
             film.Company = company;
@@ -185,6 +169,14 @@ namespace CinemaInfrastructure.Controllers
             if (CheckNameDublication(film.Name))
             {
                 ModelState.AddModelError("Name", "Фільм з такою назвою вже існує!");
+            }
+
+            if (!ModelState.IsValid)
+            {
+                foreach (var modelError in ModelState)
+                {
+                    ModelState.AddModelError("",$"Key: {modelError.Key}, Error: {string.Join(", ", modelError.Value.Errors.Select(e => e.ErrorMessage))}");
+                }
             }
 
             if (ModelState.IsValid)
