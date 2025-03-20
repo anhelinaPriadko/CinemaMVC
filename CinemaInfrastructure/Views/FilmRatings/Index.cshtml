@@ -31,9 +31,11 @@
                 @Html.DisplayFor(modelItem => item.Rating)
             </td>
             <td>
-                <button class="btn btn-danger btn-sm" onclick="confirmDelete('@Url.Action("Delete", "FilmRatings", new { id = item.Id })', 'користувача @item.Viewer.Name для фільму @item.Film.Name', 'відгук')">
-                    Видалити
-                </button>
+                    <button class="btn btn-danger btn-sm"
+                            onclick="confirmDelete('@Url.Action("Delete", "FilmRatings", new { filmId = item.FilmId, viewerId = item.ViewerId })', 'користувача @item.Viewer.Name для фільму @item.Film.Name', 'відгук')">
+                        Видалити
+                    </button>
+
             </td>
         </tr>
 }

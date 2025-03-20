@@ -79,7 +79,7 @@
                 <a class="btn btn-warning btn-sm" asp-action="Edit" asp-route-id="@item.Id">Редагувати</a>
                 <a class="btn btn-info btn-sm" asp-action="Details" asp-route-id="@item.Id">Деталі</a>
                 <a class="btn btn-info btn-sm" asp-action="DetailsBySessions" asp-route-id="@item.Id">Сеанси</a>
-                <a class="btn btn-info btn-sm" asp-action="DetailsByRatings" asp-route-id="@item.Id">Відгуки</a>
+                <a class="btn btn-info btn-sm" asp-action="DetailsByRatings" asp-route-id="@item.Id">Оцінки</a>
                     <button class="btn btn-danger btn-sm" onclick="confirmDelete('@Url.Action("Delete", "Films", new { id = item.Id })', '@item.Name', 'фільм')">
                     Видалити
                 </button>

@@ -83,6 +83,11 @@ namespace CinemaInfrastructure.Controllers
             return View(filmRating);
         }
 
+        private bool checkDublications(int viewerId, int filmId)
+        {
+            return _context.FilmRatings.Any(f => f.ViewerId == viewerId && f.FilmId == filmId);
+        }
+
         // GET: FilmRatings/Create
         public IActionResult Create()
         {
@@ -102,7 +107,7 @@ namespace CinemaInfrastructure.Controllers
                 .Include(f => f.Company)
                 .FirstOrDefault(f => f.Id == filmRating.FilmId);
 
-            Viewer viewer = _context.Viewers.Include(v => v.FilmRatings)
+            Viewer viewer = _context.Viewers
                 .FirstOrDefault(v => v.Id == filmRating.ViewerId);
 
             filmRating.Film = film;
@@ -110,6 +115,11 @@ namespace CinemaInfrastructure.Controllers
 
             ModelState.Clear();
             TryValidateModel(filmRating);
+
+            if(checkDublications(filmRating.ViewerId, filmRating.FilmId))
+            {
+                ModelState.AddModelError("", "Даний користувач вже залишав оцінку для цього фільму!");
+            }
 
             if (ModelState.IsValid)
             {
@@ -196,17 +206,13 @@ namespace CinemaInfrastructure.Controllers
         }
 
         // GET: FilmRatings/Delete/5
-        public async Task<IActionResult> Delete(int? id)
+        public async Task<IActionResult> Delete(int filmId, int viewerId)
         {
-            if (id == null)
-            {
-                return NotFound();
-            }
-
             var filmRating = await _context.FilmRatings
                 .Include(f => f.Film)
                 .Include(f => f.Viewer)
-                .FirstOrDefaultAsync(m => m.Id == id);
+                .FirstOrDefaultAsync(m => m.FilmId == filmId && m.ViewerId == viewerId);
+
             if (filmRating == null)
             {
                 return NotFound();
@@ -218,16 +224,20 @@ namespace CinemaInfrastructure.Controllers
         // POST: FilmRatings/Delete/5
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> DeleteConfirmed(int id)
+        public async Task<IActionResult> DeleteConfirmed(int filmId, int viewerId)
         {
-            var filmRating = await _context.FilmRatings.FindAsync(id);
+            var filmRating = await _context.FilmRatings
+                .Include(f => f.Viewer)
+                .Include(f => f.Film)
+                .FirstOrDefaultAsync(fr => fr.FilmId == filmId && fr.ViewerId == viewerId);
+
             if (filmRating != null)
             {
                 _context.FilmRatings.Remove(filmRating);
                 TempData["SuccessMessage"] = $"Оцінку користувача \"{filmRating.Viewer.Name}\" для фільму \"{filmRating.Film.Name}\" успішно видалено!";
+                await _context.SaveChangesAsync();
             }
 
-            await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
         }
 
