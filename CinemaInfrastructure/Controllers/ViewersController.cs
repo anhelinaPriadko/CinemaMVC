@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using CinemaDomain.Model;
 using CinemaInfrastructure;
+using Microsoft.EntityFrameworkCore.Metadata.Internal;
 
 namespace CinemaInfrastructure.Controllers
 {
@@ -77,6 +78,20 @@ namespace CinemaInfrastructure.Controllers
             return RedirectToAction("IndexByViewers", "Bookings", new { viewerId = viewer.Id });
         }
 
+        private bool checkDuplication(string viewerName)
+        {
+            return _context.Viewers.Any(v => v.Name == viewerName);
+        }
+
+        private bool checkAge(DateOnly viewerAge, int minAge)
+        {
+            DateOnly theYoungestAge = DateOnly.FromDateTime(DateTime.Now);
+            theYoungestAge.AddYears(minAge);
+
+            return viewerAge < theYoungestAge;
+            
+        }
+
         // GET: Viewers/Create
         public IActionResult Create()
         {
@@ -90,6 +105,12 @@ namespace CinemaInfrastructure.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create([Bind("Name,DateOfBirth,Id")] Viewer viewer)
         {
+            if (checkDuplication(viewer.Name))
+                ModelState.AddModelError("Name", "Користувач з таким ім'ям вже існує!");
+
+            if (checkAge(viewer.DateOfBirth, 18))
+                ModelState.AddModelError("DateOfBirth", "Мінімальний вік користувача має бути 18 років!");
+
             if (ModelState.IsValid)
             {
                 _context.Add(viewer);
@@ -126,6 +147,13 @@ namespace CinemaInfrastructure.Controllers
             {
                 return NotFound();
             }
+
+            {if (checkDuplication(viewer.Name))
+                    ModelState.AddModelError("Name", "Користувач з таким ім'ям вже існує!");
+            }
+
+            if (checkAge(viewer.DateOfBirth, 18))
+                ModelState.AddModelError("DateOfBirth", "Мінімальний вік користувача має бути 18 років!");
 
             if (ModelState.IsValid)
             {
