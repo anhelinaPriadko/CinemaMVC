@@ -140,13 +140,10 @@ namespace CinemaInfrastructure.Controllers
 
 
         // GET: Bookings/Create
-        // GET: Bookings/Create
         public IActionResult Create()
         {
-            // Завантажуємо список фільмів із бази даних
             var films = _context.Films.ToList();
             var viewers = _context.Viewers.ToList();
-            // Передаємо список у ViewBag, щоб у View використовувати його для формування випадаючого списку
             ViewBag.Films = films;
             ViewData["ViewerId"] = new SelectList(_context.Viewers, "Id", "Name", null);
             return View();
@@ -154,7 +151,6 @@ namespace CinemaInfrastructure.Controllers
 
         public async Task<IActionResult> GetSessionsByFilm(int filmId)
         {
-            // Отримуємо сеанси для обраного фільму
             var sessions = await _context.Sessions
                 .Where(s => s.Film.Id == filmId)
                 .Select(s => new {
@@ -203,8 +199,10 @@ namespace CinemaInfrastructure.Controllers
             return Json(seats);
         }
 
-
-
+        private bool checkDublication(int sessioId, int seatId)
+        {
+            return _context.Bookings.Any(b => b.SessionId == sessioId && b.SeatId == seatId);
+        }
 
 
         // POST: Bookings/Create
@@ -235,6 +233,11 @@ namespace CinemaInfrastructure.Controllers
             ModelState.Clear();
             TryValidateModel(booking);
 
+            if(checkDublication(booking.SessionId, booking.SeatId))
+            {
+                ModelState.AddModelError("", "Дане місце на цей сеанс вже заброньовано!");
+            }
+
             if (ModelState.IsValid)
             {
                 _context.Add(booking);
@@ -249,38 +252,31 @@ namespace CinemaInfrastructure.Controllers
 
         // GET: Bookings/Edit
         public async Task<IActionResult> Edit(int viewerId, int sessionId, int seatId)
-{
-    var booking = await _context.Bookings
-        .Include(b => b.Seat)
-        .Include(b => b.Session)
-            .ThenInclude(s => s.Film)
-        .FirstOrDefaultAsync(b =>
-            b.ViewerId == viewerId &&
-            b.SessionId == sessionId &&
-            b.SeatId == seatId);
+        {
+            var booking = await _context.Bookings
+                .Include(b => b.Seat)
+                .Include(b => b.Session)
+                    .ThenInclude(s => s.Film)
+                .FirstOrDefaultAsync(b =>
+                    b.ViewerId == viewerId &&
+                    b.SessionId == sessionId &&
+                    b.SeatId == seatId);
 
-    if (booking == null)
-        return NotFound();
+            if (booking == null)
+                return NotFound();
 
-    // Завантажуємо список всіх фільмів
-    ViewBag.Films = _context.Films.ToList();
+            ViewBag.Films = _context.Films.ToList();
 
-    // Завантажуємо сеанси для того фільму, який прив’язаний до цього бронювання
-    ViewBag.Sessions = _context.Sessions
-        .Where(s => s.FilmId == booking.Session.FilmId)
-        .Select(s => new {
-            s.Id,
-            SessionTime = s.SessionTime.ToString("dd.MM.yyyy HH:mm")
-        })
-        .ToList();
+            ViewBag.Sessions = _context.Sessions
+                .Where(s => s.FilmId == booking.Session.FilmId)
+                .Select(s => new {
+                    s.Id,
+                    SessionTime = s.SessionTime.ToString("dd.MM.yyyy HH:mm")
+                })
+                .ToList();
 
-    // Можна не завантажувати rows/seats – вони будуть отримуватися через AJAX
-
-    return View(booking);
-}
-
-
-
+            return View(booking);
+        }
 
         // POST: Bookings/Edit/5
         // To protect from overposting attacks, enable the specific properties you want to bind to.
@@ -288,33 +284,63 @@ namespace CinemaInfrastructure.Controllers
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(
-                int viewerId,
-                int sessionId, // Старий SessionId
-                int seatId,    // Старий SeatId
-                int newSessionId, // Новий SessionId
-                int newSeatId     // Новий SeatId
-                )
+        int viewerId,
+        int sessionId,
+        int seatId,
+        int newSessionId,
+        int newSeatId
+        )
         {
             var oldBooking = await _context.Bookings.FindAsync(viewerId, sessionId, seatId);
             if (oldBooking == null)
                 return NotFound();
 
-            // Видаляємо старе бронювання
-            _context.Bookings.Remove(oldBooking);
-
-            // Створюємо нове бронювання з новими даними
             var newBooking = new Booking
             {
                 ViewerId = oldBooking.ViewerId,
-                SessionId = newSessionId, // Оновлений сеанс
-                SeatId = newSeatId        // Оновлене місце
+                SessionId = newSessionId,
+                SeatId = newSeatId
             };
 
+            Viewer viewer = await _context.Viewers.FirstOrDefaultAsync(v => v.Id == newBooking.ViewerId);
+
+            Session session = await _context.Sessions
+                .Include(s => s.Hall)
+                .Include(s => s.Film)
+                .Include(s => s.Film.FilmCategory)
+                .Include(s => s.Film.Company)
+                .FirstOrDefaultAsync(s => s.Id == newBooking.SessionId);
+
+            Seat seat = await _context.Seats
+                .Include(s => s.Hall)
+                .Include(s => s.Hall.HallType)
+                .FirstOrDefaultAsync(s => s.Id == newBooking.SeatId);
+
+            newBooking.Viewer = viewer;
+            newBooking.Session = session;
+            newBooking.Seat = seat;
+
+            ModelState.Clear();
+            TryValidateModel(newBooking);
+
+            if (checkDublication(newSessionId, newSeatId))
+            {
+                ModelState.AddModelError("", "Дане місце на цей сеанс вже заброньовано!");
+            }
+
+            if (!ModelState.IsValid)
+            {
+                return View(newBooking);
+            }
+
+            _context.Bookings.Remove(oldBooking);
             _context.Bookings.Add(newBooking);
+
             await _context.SaveChangesAsync();
 
             return RedirectToAction(nameof(Index));
         }
+
 
 
 
