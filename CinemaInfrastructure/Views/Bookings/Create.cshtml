@@ -10,7 +10,7 @@
 
 <form asp-action="Create" method="post">
     <div class="form-group">
-        <label asp-for="ViewerId"></label>
+        <label asp-for="ViewerId">Глядач</label>
         <select asp-for="ViewerId" class="form-control" asp-items="@(ViewData["ViewerId"] as IEnumerable<SelectListItem>)">
             <option value="">Оберіть глядача</option>
         </select>

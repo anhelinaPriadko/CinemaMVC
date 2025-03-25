@@ -251,17 +251,47 @@ namespace CinemaInfrastructure.Controllers
             return RedirectToAction(nameof(Index));
         }
 
+
+        public async Task<IActionResult> Edit(int viewerId, int sessionId, int seatId)
+        {
+            var booking = await _context.Bookings
+                .Include(b => b.Seat)
+                .Include(b => b.Session)
+                    .ThenInclude(s => s.Film)
+                .FirstOrDefaultAsync(b =>
+                    b.ViewerId == viewerId &&
+                    b.SessionId == sessionId &&
+                    b.SeatId == seatId);
+
+            if (booking == null)
+                return NotFound();
+
+            ViewBag.Films = _context.Films.ToList();
+
+            // Формуємо SelectList для сеансів того самого фільму
+            var sessions = _context.Sessions
+                .Where(s => s.FilmId == booking.Session.FilmId)
+                .Select(s => new {
+                    s.Id,
+                    Time = s.SessionTime.ToString("dd.MM.yyyy HH:mm")
+                }).ToList();
+            ViewBag.SessionTime = new SelectList(sessions, "Id", "Time", booking.SessionId);
+
+            return View(booking);
+        }
+
+
         // POST: Bookings/Edit/5
         // To protect from overposting attacks, enable the specific properties you want to bind to.
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(
-    int viewerId,
-    int sessionId,    // початковий сеанс
-    int seatId,       // початкове місце
-    int newSessionId, // новий сеанс (якщо змінюємо)
-    int newSeatId)    // нове місце
+                [ValidateAntiForgeryToken]
+                public async Task<IActionResult> Edit(
+            int viewerId,
+            int sessionId,    // початковий сеанс
+            int seatId,       // початкове місце
+            int newSessionId, // новий сеанс (якщо змінюємо)
+            int newSeatId)    // нове місце
         {
             // Знаходимо існуюче бронювання
             var oldBooking = await _context.Bookings.FindAsync(viewerId, sessionId, seatId);

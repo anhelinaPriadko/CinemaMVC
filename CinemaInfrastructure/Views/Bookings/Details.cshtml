@@ -10,42 +10,39 @@
     <h4>Бронювання</h4>
     <hr />
     <dl class="row">
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Seat)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Seat.Id)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Session)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Session.Id)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Viewer)
-        </dt>
-        <dd class = "col-sm-10">
+        <dt class="col-sm-2">Глядач</dt>
+        <dd class="col-sm-10">
             @Html.DisplayFor(model => model.Viewer.Name)
+        </dd>
+        <dt class="col-sm-2">Фільм</dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.Session.Film.Name)
+        </dd>
+        <dt class="col-sm-2">Дата сеансу</dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.Session.SessionTime)
+        </dd>
+        <dt class = "col-sm-2">Зал</dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.Seat.Hall.Name)
+        </dd>
+        <dt class="col-sm-2">Ряд</dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.Seat.Row)
+        </dd>
+        <dt class="col-sm-2">Номер місця в ряду</dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.Seat.NumberInRow)
         </dd>
     </dl>
 </div>
-@Html.ActionLink("Edit", "Edit", new
-    {
-        viewerId = Model.ViewerId,
-        sessionId = Model.SessionId,
-        seatId = Model.SeatId
-    }) |
-@Html.ActionLink("Details", "Details", new
-    {
-        viewerId = Model.ViewerId,
-        sessionId = Model.SessionId,
-        seatId = Model.SeatId
-    }) |
-@Html.ActionLink("Delete", "Delete", new
-    {
-        viewerId = Model.ViewerId,
-        sessionId = Model.SessionId,
-        seatId = Model.SeatId
-    })
+<div>
+    <a class="btn btn-warning btn-sm"
+       asp-action="Edit"
+       asp-route-viewerId="@Model.ViewerId"
+       asp-route-sessionId="@Model.SessionId"
+       asp-route-seatId="@Model.SeatId">
+        Редагувати
+    </a>
+</div>
 
