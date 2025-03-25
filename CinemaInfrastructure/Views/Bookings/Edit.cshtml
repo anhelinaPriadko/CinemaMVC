@@ -1,67 +1,78 @@
 ﻿@model CinemaDomain.Model.Booking
-
 @{
-    ViewData["Title"] = "Edit";
+    ViewData["Title"] = "Змінити бронювання";
 }
-
 <h1>Змінити бронювання (змінити місце)</h1>
+
 <div class="row">
     <div class="col-md-4">
-<form asp-action="Edit" method="post">
-    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+        <form asp-action="Edit" method="post">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
 
-        <input type="hidden" name="viewerId" value="@Model.ViewerId" />
-        <input type="hidden" name="sessionId" value="@Model.SessionId" />
-        <input type="hidden" name="seatId" value="@Model.SeatId" />
+            <!-- Приховані поля для збереження початкових ключових значень -->
+            <input type="hidden" name="viewerId" value="@Model.ViewerId" />
+            <input type="hidden" name="sessionId" value="@Model.SessionId" />
+            <input type="hidden" name="seatId" value="@Model.SeatId" />
 
-    <div class="form-group">
-        <label for="FilmName">Фільм</label>
-        <input type="text" id="FilmName" class="form-control" value="@Model.Session.Film.Name" readonly />
-        <input type="hidden" id="FilmId" value="@Model.Session.FilmId" />
-    </div>
-        <div class="form-group">
-        <label for="SessionTime">Час сеансу</label>
-        <select id="SessionTime" name="newSessionId" class="form-control">
-                    <option value="@Model.SessionId" selected>@Model.Session.SessionTime.ToString("dd.MM.yyyy HH:mm")</option>
-            @foreach (var session in ViewBag.Sessions)
-            {
-                if (session.Id != Model.SessionId)
-                {
-                    <option value="@session.Id">@Convert.ToDateTime(session.SessionTime).ToString("dd.MM.yyyy HH:mm")</option>
-                }
-            }
-        </select>
-    </div>
+            <div class="form-group">
+                <label>Фільм</label>
+                <input type="text" class="form-control" value="@Model.Session.Film.Name" readonly />
+                <input type="hidden" id="FilmId" value="@Model.Session.FilmId" />
+            </div>
+            <div class="form-group">
+                <label for="SessionTime">Час сеансу</label>
+                <!-- Задаємо name="newSessionId", щоб новий сеанс передавався у POST -->
+                <select id="SessionTime" name="newSessionId" asp-items="@(ViewBag.SessionTime as SelectList)" class="form-control"></select>
+            </div>
             <div class="form-group">
                 <label for="RowSelect">Ряд</label>
                 <select id="RowSelect" class="form-control">
-                    <option value="@Model.Seat.Row">@Model.Seat.Row</option>
+                    <option value="">Оберіть ряд</option>
+                    @{
+                        var initialRow = ViewBag.InitialRow != null ? ViewBag.InitialRow.ToString() : "";
+                    }
+                    @if (!string.IsNullOrEmpty(initialRow))
+                    {
+                        @:
+                        <option value="@initialRow" selected="selected">@initialRow</option>
+                    }
                 </select>
             </div>
             <div class="form-group">
                 <label for="SeatId">Місце</label>
                 <select id="SeatId" name="newSeatId" class="form-control">
-                    <option value="@Model.SeatId">@Model.Seat.NumberInRow</option>
+                    <option value="">Оберіть місце</option>
+                    @if (ViewBag.Seats != null)
+                    {
+                        foreach (var seat in (SelectList)ViewBag.Seats)
+                        {
+                            if (seat.Value == Model.SeatId.ToString())
+                            {
+                                <option value="@seat.Value" selected="selected">@seat.Text</option>
+                            }
+                            else
+                            {
+                                <option value="@seat.Value">@seat.Text</option>
+                            }
+                        }
+                    }
                 </select>
             </div>
-
-    <button type="submit" class="btn btn-primary">Зберегти</button>
-</form>
+            <button type="submit" class="btn btn-primary">Зберегти</button>
+        </form>
         <div>
             <a asp-action="Index">Назад</a>
         </div>
-
     </div>
 </div>
 
 @section Scripts {
     <script>
-                $(document).ready(function () {
+        $(document).ready(function () {
             function resetRowsAndSeats() {
                 $("#RowSelect").empty().append('<option value="">Оберіть ряд</option>');
                 $("#SeatId").empty().append('<option value="">Оберіть місце</option>');
             }
-
             function loadRowsAndSeats(sessionId, selectedRow) {
                 if (sessionId) {
                     $.ajax({
@@ -70,21 +81,21 @@
                         success: function (rows) {
                             resetRowsAndSeats();
                             $.each(rows, function (i, row) {
-                                var isSelected = (row == selectedRow) ? " selected" : "";
+                                var isSelected = (row == selectedRow) ? " selected=\"selected\"" : "";
                                 $("#RowSelect").append('<option value="' + row + '"' + isSelected + '>' + row + '</option>');
                             });
-
-                            // Якщо є вибраний ряд, підтягуємо доступні місця
                             if (selectedRow) {
                                 loadSeats(sessionId, selectedRow);
                             }
+                        },
+                        error: function () {
+                            resetRowsAndSeats();
                         }
                     });
                 } else {
                     resetRowsAndSeats();
                 }
             }
-
             function loadSeats(sessionId, row) {
                 if (sessionId && row) {
                     $.ajax({
@@ -93,9 +104,12 @@
                         success: function (seats) {
                             $("#SeatId").empty().append('<option value="">Оберіть місце</option>');
                             $.each(seats, function (i, seat) {
-                                var isSelected = (seat.id == '@Model.SeatId') ? " selected" : "";
+                                var isSelected = (seat.id == '@Model.SeatId') ? " selected=\"selected\"" : "";
                                 $("#SeatId").append('<option value="' + seat.id + '"' + isSelected + '>' + seat.numberInRow + '</option>');
                             });
+                        },
+                        error: function () {
+                            $("#SeatId").empty().append('<option value="">Оберіть місце</option>');
                         }
                     });
                 } else {
@@ -103,20 +117,20 @@
                 }
             }
 
+            // При зміні часу сеансу очищаємо ряди і місця, потім завантажуємо нові
             $("#SessionTime").change(function () {
                 var sessionId = $(this).val();
+                resetRowsAndSeats();
                 loadRowsAndSeats(sessionId, null);
             });
-
+            // При зміні ряду завантажуємо відповідні місця
             $("#RowSelect").change(function () {
                 var sessionId = $("#SessionTime").val();
                 var row = $(this).val();
                 loadSeats(sessionId, row);
             });
-
-            // Завантажуємо ряди та місця при завантаженні сторінки
+            // При завантаженні сторінки завантажуємо ряди і місця для початкових значень
             loadRowsAndSeats('@Model.SessionId', '@Model.Seat.Row');
         });
     </script>
 }
-

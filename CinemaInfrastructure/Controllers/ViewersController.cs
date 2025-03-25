@@ -86,10 +86,9 @@ namespace CinemaInfrastructure.Controllers
         private bool checkAge(DateOnly viewerAge, int minAge)
         {
             DateOnly theYoungestAge = DateOnly.FromDateTime(DateTime.Now);
-            theYoungestAge.AddYears(minAge);
+            DateOnly result = theYoungestAge.AddYears(-minAge);
 
-            return viewerAge < theYoungestAge;
-            
+            return viewerAge < result;
         }
 
         // GET: Viewers/Create
@@ -152,7 +151,7 @@ namespace CinemaInfrastructure.Controllers
                     ModelState.AddModelError("Name", "Користувач з таким ім'ям вже існує!");
             }
 
-            if (checkAge(viewer.DateOfBirth, 18))
+            if (!checkAge(viewer.DateOfBirth, 18))
                 ModelState.AddModelError("DateOfBirth", "Мінімальний вік користувача має бути 18 років!");
 
             if (ModelState.IsValid)
