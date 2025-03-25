@@ -17,7 +17,8 @@ public partial class Film : Entity
     public int FilmCategoryId { get; set; }
 
     [Required(ErrorMessage = "Поле не повинно бути порожнім!")]
-    [FutureDate("1896-01-25")] 
+    [FutureDate("1896-01-25")]
+    [MaxFutureDate(3)]
     public DateOnly ReleaseDate { get; set; }
 
     public string? Description { get; set; }
@@ -45,6 +46,32 @@ public class FutureDateAttribute : ValidationAttribute
         if (value is DateOnly dateValue && dateValue <= _minDate)
         {
             return new ValidationResult($"Дата повинна бути пізнішою за {_minDate:dd.MM.yyyy}!");
+        }
+        return ValidationResult.Success;
+    }
+}
+
+public class MaxFutureDateAttribute : ValidationAttribute
+{
+    private readonly int _mounthToAdd;
+
+    public MaxFutureDateAttribute(int mounthToAdd)
+    {
+        _mounthToAdd = mounthToAdd;
+    }
+
+    protected override ValidationResult IsValid(object value, ValidationContext validationContext)
+    {
+        if (value is DateOnly dateTimeValue)
+        {
+            DateOnly today = DateOnly.FromDateTime(DateTime.Today);
+            var MaxAllowedDate = today.AddMonths(_mounthToAdd);
+            if (dateTimeValue > MaxAllowedDate)
+            {
+                return new ValidationResult(
+                    $"Дата випуску фільму має бути не пізніше ніж {MaxAllowedDate:dd.MM.yyyy}!"
+                );
+            }
         }
         return ValidationResult.Success;
     }

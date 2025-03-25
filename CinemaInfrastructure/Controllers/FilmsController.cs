@@ -137,7 +137,6 @@ namespace CinemaInfrastructure.Controllers
             return RedirectToAction("IndexByFilms", "FilmRatings", new { filmId = film.Id });
         }
 
-
         // GET: Films/Create
         public IActionResult Create(int? categoryId, int? companyId)
         {
@@ -169,14 +168,6 @@ namespace CinemaInfrastructure.Controllers
             if (CheckNameDublication(film.Name))
             {
                 ModelState.AddModelError("Name", "Фільм з такою назвою вже існує!");
-            }
-
-            if (!ModelState.IsValid)
-            {
-                foreach (var modelError in ModelState)
-                {
-                    ModelState.AddModelError("",$"Key: {modelError.Key}, Error: {string.Join(", ", modelError.Value.Errors.Select(e => e.ErrorMessage))}");
-                }
             }
 
             if (ModelState.IsValid)

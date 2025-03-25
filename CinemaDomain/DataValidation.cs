@@ -22,7 +22,7 @@ namespace CinemaDomain.Validation
                 if (dateTimeValue < minAllowedDateTime)
                 {
                     return new ValidationResult(
-                        $"Час сеансу має бути не раніше, ніж {minAllowedDateTime:dd.MM.yyyy HH:mm}!"
+                        $"Час сеансу має бути не раніше ніж {minAllowedDateTime:dd.MM.yyyy HH:mm}!"
                     );
                 }
 
@@ -30,7 +30,7 @@ namespace CinemaDomain.Validation
                 if(dateTimeValue > maxAllowedDateTime)
                 {
                     return new ValidationResult(
-                        $"Час сеансу має бути не пізніше, ніж {maxAllowedDateTime:dd.MM.yyyy HH:mm}!"
+                        $"Час сеансу має бути не пізніше ніж {maxAllowedDateTime:dd.MM.yyyy HH:mm}!"
                     );
                 }
             }
