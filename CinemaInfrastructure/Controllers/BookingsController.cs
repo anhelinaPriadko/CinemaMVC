@@ -138,6 +138,28 @@ namespace CinemaInfrastructure.Controllers
             return View(booking);
         }
 
+        public async Task<IActionResult> GetSeatMap(int sessionId)
+        {
+            var session = await _context.Sessions
+            .Include(s => s.Hall)
+            .FirstOrDefaultAsync(s => s.Id == sessionId);
+            if (session == null)
+                return NotFound("Сеанс не знайдено.");
+
+            int hallId = session.HallId;
+
+            var seats = await _context.Seats
+                .Where(s => s.HallId == hallId)
+                .Select(s => new
+                {
+                    s.Id,
+                    s.Row,
+                    s.NumberInRow,
+                    IsBooked = _context.Bookings.Any(b => b.SeatId == s.Id && b.SessionId == sessionId)
+                }).ToListAsync();
+
+            return Json(seats);
+        }
 
         // GET: Bookings/Create
         public IActionResult Create()

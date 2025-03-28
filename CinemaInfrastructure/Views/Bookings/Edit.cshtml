@@ -8,6 +8,7 @@
     <div class="col-md-4">
         <form asp-action="Edit" method="post">
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <!-- Оригінальні ключові значення -->
             <input type="hidden" name="viewerId" value="@Model.ViewerId" />
             <input type="hidden" name="sessionId" value="@Model.SessionId" />
             <input type="hidden" name="seatId" value="@Model.SeatId" />
@@ -19,41 +20,15 @@
             </div>
             <div class="form-group">
                 <label for="SessionTime">Час сеансу</label>
+                <!-- Селектор для нового сеансу. Значення передається як newSessionId -->
                 <select id="SessionTime" name="newSessionId" asp-items="@(ViewBag.SessionTime as SelectList)" class="form-control"></select>
             </div>
             <div class="form-group">
-                <label for="RowSelect">Ряд</label>
-                <select id="RowSelect" class="form-control">
-                    <option value="">Оберіть ряд</option>
-                    @{
-                        var initialRow = ViewBag.InitialRow != null ? ViewBag.InitialRow.ToString() : "";
-                    }
-                    @if (!string.IsNullOrEmpty(initialRow))
-                    {
-                        @:
-                        <option value="@initialRow" selected="selected">@initialRow</option>
-                    }
-                </select>
-            </div>
-            <div class="form-group">
-                <label for="SeatId">Місце</label>
-                <select id="SeatId" name="newSeatId" class="form-control">
-                    <option value="">Оберіть місце</option>
-                    @if (ViewBag.Seats != null)
-                    {
-                        foreach (var seat in (SelectList)ViewBag.Seats)
-                        {
-                            if (seat.Value == Model.SeatId.ToString())
-                            {
-                                <option value="@seat.Value" selected="selected">@seat.Text</option>
-                            }
-                            else
-                            {
-                                <option value="@seat.Value">@seat.Text</option>
-                            }
-                        }
-                    }
-                </select>
+                <label>Вибір місця</label>
+                <!-- Контейнер для мапи залу -->
+                <div id="seat-map"></div>
+                <!-- Приховане поле для збереження id нового вибраного місця (newSeatId) -->
+                <input type="hidden" id="selectedSeatId" name="newSeatId" value="@Model.SeatId" />
             </div>
             <button type="submit" class="btn btn-primary">Зберегти</button>
         </form>
@@ -66,68 +41,72 @@
 @section Scripts {
     <script>
         $(document).ready(function () {
-            function resetRowsAndSeats() {
-                $("#RowSelect").empty().append('<option value="">Оберіть ряд</option>');
-                $("#SeatId").empty().append('<option value="">Оберіть місце</option>');
-            }
-            function loadRowsAndSeats(sessionId, selectedRow) {
-                if (sessionId) {
-                    $.ajax({
-                        url: '@Url.Action("GetRowsBySession", "Bookings")',
-                        data: { sessionId: sessionId },
-                        success: function (rows) {
-                            resetRowsAndSeats();
-                            $.each(rows, function (i, row) {
-                                var isSelected = (row == selectedRow) ? " selected=\"selected\"" : "";
-                                $("#RowSelect").append('<option value="' + row + '"' + isSelected + '>' + row + '</option>');
-                            });
-                            if (selectedRow) {
-                                loadSeats(sessionId, selectedRow);
-                            }
-                        },
-                        error: function () {
-                            resetRowsAndSeats();
-                        }
-                    });
-                } else {
-                    resetRowsAndSeats();
-                }
-            }
-            function loadSeats(sessionId, row) {
-                if (sessionId && row) {
-                    $.ajax({
-                        url: '@Url.Action("GetSeatsByRow", "Bookings")',
-                        data: { sessionId: sessionId, row: row },
-                        success: function (seats) {
-                            $("#SeatId").empty().append('<option value="">Оберіть місце</option>');
-                            $.each(seats, function (i, seat) {
-                                var isSelected = (seat.id == '@Model.SeatId') ? " selected=\"selected\"" : "";
-                                $("#SeatId").append('<option value="' + seat.id + '"' + isSelected + '>' + seat.numberInRow + '</option>');
-                            });
-                        },
-                        error: function () {
-                            $("#SeatId").empty().append('<option value="">Оберіть місце</option>');
-                        }
-                    });
-                } else {
-                    $("#SeatId").empty().append('<option value="">Оберіть місце</option>');
-                }
+            // Завантажуємо карту місць одразу при завантаженні сторінки для поточного сеансу
+            var initialSessionId = "@Model.SessionId";
+            if (initialSessionId) {
+                loadSeatMap(initialSessionId);
             }
 
-            // При зміні часу сеансу очищаємо ряди і місця, потім завантажуємо нові
+            // При зміні часу сеансу завантажуємо карту місць
             $("#SessionTime").change(function () {
                 var sessionId = $(this).val();
-                resetRowsAndSeats();
-                loadRowsAndSeats(sessionId, null);
+                $("#seat-map").empty();
+                if (sessionId) {
+                    loadSeatMap(sessionId);
+                }
             });
-            // При зміні ряду завантажуємо відповідні місця
-            $("#RowSelect").change(function () {
-                var sessionId = $("#SessionTime").val();
-                var row = $(this).val();
-                loadSeats(sessionId, row);
-            });
-            // При завантаженні сторінки завантажуємо ряди і місця для початкових значень
-            loadRowsAndSeats('@Model.SessionId', '@Model.Seat.Row');
+
+            function loadSeatMap(sessionId) {
+                $.ajax({
+                    url: '@Url.Action("GetSeatMap", "Bookings")',
+                    data: { sessionId: sessionId },
+                    success: function (data) {
+                        buildSeatMap(data);
+                    }
+                });
+            }
+
+            function buildSeatMap(seats) {
+                var grouped = {};
+                var selectedSeatId = $("#selectedSeatId").val();
+
+                $.each(seats, function (i, seat) {
+                    if (!grouped[seat.row]) {
+                        grouped[seat.row] = [];
+                    }
+                    grouped[seat.row].push(seat);
+                });
+
+                var $map = $("<table class='seat-map-table'></table>");
+                $.each(grouped, function (row, seatsInRow) {
+                    var $tr = $("<tr></tr>");
+                    $tr.append("<td class='row-label'>" + row + "</td>");
+                    $.each(seatsInRow, function (i, seat) {
+                        var $td = $("<td></td>");
+                        var $seatBtn = $("<button type='button' class='seat-btn'></button>")
+                            .text(seat.numberInRow)
+                            .attr("data-seat-id", seat.id);
+                        if (seat.isBooked && seat.id !== parseInt(selectedSeatId)) {
+                            $seatBtn.addClass("booked").prop("disabled", true);
+                        } else {
+                            if (seat.id === parseInt(selectedSeatId)) {
+                                $seatBtn.addClass("selected");
+                            } else {
+                                $seatBtn.addClass("available");
+                            }
+                            $seatBtn.on("click", function () {
+                                $(".seat-btn.available, .seat-btn.selected").removeClass("selected");
+                                $(this).addClass("selected");
+                                $("#selectedSeatId").val($(this).attr("data-seat-id"));
+                            });
+                        }
+                        $td.append($seatBtn);
+                        $tr.append($td);
+                    });
+                    $map.append($tr);
+                });
+                $("#seat-map").html($map);
+            }
         });
     </script>
 }

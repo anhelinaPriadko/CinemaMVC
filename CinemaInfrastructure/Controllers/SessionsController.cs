@@ -74,7 +74,6 @@ namespace CinemaInfrastructure.Controllers
             return View("Index", sessions);
         }
 
-
         // GET: Sessions/Details/5
         public async Task<IActionResult> Details(int? id)
         {
