@@ -147,9 +147,14 @@ namespace CinemaInfrastructure.Controllers
                 return NotFound();
             }
 
-            {if (checkDuplication(viewer.Name))
-                    ModelState.AddModelError("Name", "Користувач з таким ім'ям вже існує!");
-            }
+            var existingViewer = await _context.Viewers.FindAsync(id);
+            if (existingViewer == null)
+                return NotFound();
+
+            
+            if (checkDuplication(viewer.Name) && viewer.Name != existingViewer.Name)
+                ModelState.AddModelError("Name", "Користувач з таким ім'ям вже існує!");
+
 
             if (!checkAge(viewer.DateOfBirth, 18))
                 ModelState.AddModelError("DateOfBirth", "Мінімальний вік користувача має бути 18 років!");
@@ -158,7 +163,9 @@ namespace CinemaInfrastructure.Controllers
             {
                 try
                 {
-                    _context.Update(viewer);
+                    existingViewer.Name = viewer.Name;
+                    existingViewer.DateOfBirth = viewer.DateOfBirth;
+                    _context.Update(existingViewer);
                     await _context.SaveChangesAsync();
                 }
                 catch (DbUpdateConcurrencyException)

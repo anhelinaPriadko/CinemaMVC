@@ -51,3 +51,8 @@ body {
         cursor: not-allowed;
     }
 
+.img-with-shadow {
+    position: relative; /* Щоб псевдоелемент позиціонувався відносно зображення */
+    display: inline-block;
+    border-radius: 8px;
+}
