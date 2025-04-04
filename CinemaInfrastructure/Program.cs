@@ -1,5 +1,7 @@
 using CinemaInfrastructure;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -10,6 +12,11 @@ builder.Services.AddDbContext<CinemaContext>(option => option.UseSqlServer(
     builder.Configuration.GetConnectionString("DefaultConnection")
     ));
 
+//builder.Services.AddDbContext<IdentityContext>(option => option.UseSqlServer(
+//    builder.Configuration.GetConnectionString("IdentityConnection")
+//    ));
+
+//builder.Services.
 
 var app = builder.Build();
 

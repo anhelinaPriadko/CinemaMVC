@@ -1,4 +1,4 @@
-namespace CinemaInfrastructure.Models
+﻿namespace CinemaInfrastructure.Models
 {
     public class ErrorViewModel
     {
