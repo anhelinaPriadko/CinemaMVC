@@ -22,6 +22,8 @@ public partial class Film : Entity
     public DateOnly ReleaseDate { get; set; }
 
     public string? Description { get; set; }
+    
+    public string? PosterPath { get; set; }  
 
     public virtual Company Company { get; set; } = null!;
 

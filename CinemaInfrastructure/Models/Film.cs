@@ -1,0 +1,29 @@
+﻿using System;
+using System.Collections.Generic;
+
+namespace CinemaInfrastructure.Models;
+
+public partial class Film
+{
+    public int Id { get; set; }
+
+    public string Name { get; set; } = null!;
+
+    public int CompanyId { get; set; }
+
+    public int FilmCategoryId { get; set; }
+
+    public DateOnly ReleaseDate { get; set; }
+
+    public string? Description { get; set; }
+
+    public string? PosterPath { get; set; }
+
+    public virtual Company Company { get; set; } = null!;
+
+    public virtual FilmCategory FilmCategory { get; set; } = null!;
+
+    public virtual ICollection<FilmRating> FilmRatings { get; set; } = new List<FilmRating>();
+
+    public virtual ICollection<Session> Sessions { get; set; } = new List<Session>();
+}

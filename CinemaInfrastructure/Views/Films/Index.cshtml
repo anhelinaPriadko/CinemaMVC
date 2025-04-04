@@ -2,8 +2,6 @@
 
 @{
     ViewData["Title"] = "Фільми";
-    int? categoryId = ViewBag.CategoryId as int?;
-    int? companyId = ViewBag.CompanyId as int?;
 }
 
 @if (TempData["Message"] != null)
@@ -11,82 +9,39 @@
     <div class="alert alert-info">@TempData["Message"]</div>
 }
 
-<h1>
-    @if (categoryId != null || companyId != null)
-    {
-        @:Фільми
-        @if (categoryId != null)
-        {
-            @: за категорією @categoryId
-        }
-        @if (companyId != null)
-        {
-            @: від компанії @companyId
-        }
-    }
-    else
-    {
-        @:Всі фільми
-    }
-</h1>
+<h1>Фільми</h1>
 
 <p>
-    @if (categoryId != null || companyId != null)
-    {
-        <a asp-action="Create" asp-route-categoryId="@categoryId" asp-route-companyId="@companyId" class="btn btn-primary">
-            Додати фільм 
-            @if (categoryId != null)
-            {
-                <span>за категорією @categoryId</span>
-            }
-            @if (companyId != null)
-            {
-                <span>від компанії @companyId</span>
-            }
-        </a>
-    }
-    else
-    {
-        <a class="btn btn-primary" asp-action="Create">Створити новий</a>
-    }
+    <a class="btn btn-primary" asp-action="Create">Створити новий</a>
 </p>
-<table class="table">
-    <thead>
-        <tr>
-            <th>Назва</th>
-            <th>Дата виходу</th>
-            <th>Виробник</th>
-            <th>категорія</th>
-            <th>Дії</th>
-        </tr>
-    </thead>
-    <tbody>
-@foreach (var item in Model) {
-        <tr>
-            <td>
-                @Html.DisplayFor(modelItem => item.Name)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.ReleaseDate)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Company.Name)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.FilmCategory.Name)
-            </td>
-            <td>
-                <a class="btn btn-warning btn-sm" asp-action="Edit" asp-route-id="@item.Id">Редагувати</a>
-                <a class="btn btn-info btn-sm" asp-action="Details" asp-route-id="@item.Id">Деталі</a>
-                <a class="btn btn-info btn-sm" asp-action="DetailsBySessions" asp-route-id="@item.Id">Сеанси</a>
-                <a class="btn btn-info btn-sm" asp-action="DetailsByRatings" asp-route-id="@item.Id">Оцінки</a>
-                    <button class="btn btn-danger btn-sm" onclick="confirmDelete('@Url.Action("Delete", "Films", new { id = item.Id })', '@item.Name', 'фільм')">
-                    Видалити
-                </button>
-            </td>
-        </tr>
-}
-    </tbody>
-</table>
 
+<div class="row">
+    @foreach (var item in Model)
+    {
+        <div class="col-md-4 mb-4">
+            <div class="card shadow-sm">
+                <div class="card-body text-center">
+                    <div class="mb-2">
+                        @if (!string.IsNullOrEmpty(item.PosterPath))
+                        {
+                            <img src="@Url.Content(item.PosterPath)" class="img-fluid rounded" alt="@item.Name" style="max-height: 350px;">
+                        }
+                        else
+                        {
+                            <div class="text-muted">Немає зображення</div>
+                        }
+                    </div>
+                    <h5 class="card-title">@item.Name</h5>
+                    <div class="d-flex justify-content-center gap-2 mt-2">
+                        <a class="btn btn-warning btn-sm" asp-action="Edit" asp-route-id="@item.Id">Редагувати</a>
+                        <a class="btn btn-info btn-sm" asp-action="Details" asp-route-id="@item.Id">Деталі</a>
+                        <button class="btn btn-danger btn-sm" onclick="confirmDelete('@Url.Action("Delete", "Films", new { id = item.Id })', '@item.Name', 'фільм')">
+                            Видалити
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+</div>
 

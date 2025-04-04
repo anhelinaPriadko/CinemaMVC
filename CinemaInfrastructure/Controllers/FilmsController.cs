@@ -13,6 +13,8 @@ using Microsoft.AspNetCore.Mvc.ModelBinding;
 
 namespace CinemaInfrastructure.Controllers
 {
+
+
     public class FilmsController : Controller
     {
         private readonly CinemaContext _context;
@@ -151,7 +153,7 @@ namespace CinemaInfrastructure.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("CompanyId,FilmCategoryId,ReleaseDate,Description,Name,Id")] Film film)
+        public async Task<IActionResult> Create([Bind("CompanyId,FilmCategoryId,ReleaseDate,Description,Name,Id")] Film film, IFormFile? posterFile)
         {
             FilmCategory filmCategory = _context.FilmCategories
                 .FirstOrDefault(f => f.Id == film.FilmCategoryId);
@@ -169,6 +171,27 @@ namespace CinemaInfrastructure.Controllers
             {
                 ModelState.AddModelError("Name", "Фільм з такою назвою вже існує!");
             }
+
+            if (posterFile != null && posterFile.Length > 0)
+            {
+                var uploadsFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/uploads");
+                if (!Directory.Exists(uploadsFolder))
+                {
+                    Directory.CreateDirectory(uploadsFolder);
+                }
+
+                string uniqueFileName = Guid.NewGuid().ToString() + Path.GetExtension(posterFile.FileName);
+                string filePath = Path.Combine(uploadsFolder, uniqueFileName);
+
+                using (var fileStream = new FileStream(filePath, FileMode.Create))
+                {
+                    await posterFile.CopyToAsync(fileStream);
+                }
+
+                film.PosterPath = "/uploads/" + uniqueFileName;
+            }
+            else
+                film.PosterPath = "/img/empty_film_image.png";
 
             if (ModelState.IsValid)
             {
@@ -204,7 +227,7 @@ namespace CinemaInfrastructure.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("CompanyId,FilmCategoryId,ReleaseDate,Description,Name,Id")] Film film)
+        public async Task<IActionResult> Edit(int id, [Bind("CompanyId,FilmCategoryId,ReleaseDate,Description,Name,Id")] Film film, IFormFile? posterFile)
         {
             if (id != film.Id)
             {
@@ -233,6 +256,27 @@ namespace CinemaInfrastructure.Controllers
                 ModelState.AddModelError("Name", "Фільм з такою назвою вже існує!");
             }
 
+            if (posterFile != null && posterFile.Length > 0)
+            {
+                var uploadsFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/uploads");
+                if (!Directory.Exists(uploadsFolder))
+                {
+                    Directory.CreateDirectory(uploadsFolder);
+                }
+
+                string uniqueFileName = Guid.NewGuid().ToString() + Path.GetExtension(posterFile.FileName);
+                string filePath = Path.Combine(uploadsFolder, uniqueFileName);
+
+                using (var fileStream = new FileStream(filePath, FileMode.Create))
+                {
+                    await posterFile.CopyToAsync(fileStream);
+                }
+
+                film.PosterPath = "/uploads/" + uniqueFileName;
+            }
+            else
+                film.PosterPath = "/img/empty_film_image.png";
+
             if (ModelState.IsValid)
             {
                 try
@@ -242,6 +286,7 @@ namespace CinemaInfrastructure.Controllers
                     existingFilm.Company = film.Company;
                     existingFilm.FilmCategoryId = film.FilmCategoryId;
                     existingFilm.FilmCategory = film.FilmCategory;
+                    existingFilm.PosterPath = film.PosterPath;
                     _context.Update(existingFilm);
                     await _context.SaveChangesAsync();
                 }
