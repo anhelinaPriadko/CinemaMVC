@@ -1,6 +1,15 @@
-﻿namespace CinemaInfrastructure
+﻿using CinemaDomain.Model;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
+
+namespace CinemaInfrastructure
 {
-    public class IdentityContext
+    public class IdentityContext : IdentityDbContext<User>
     {
+        public IdentityContext(DbContextOptions<IdentityContext> options)
+            : base(options)
+        {
+            Database.EnsureCreated();
+        }
     }
 }
