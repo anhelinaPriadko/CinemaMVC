@@ -107,8 +107,8 @@ namespace CinemaInfrastructure.Controllers
             if (checkDuplication(viewer.Name))
                 ModelState.AddModelError("Name", "Користувач з таким ім'ям вже існує!");
 
-            if (!checkAge(viewer.DateOfBirth, 18))
-                ModelState.AddModelError("DateOfBirth", "Мінімальний вік користувача має бути 18 років!");
+            if (!checkAge(viewer.DateOfBirth, 14))
+                ModelState.AddModelError("DateOfBirth", "Мінімальний вік користувача має бути 14 років!");
 
             if (ModelState.IsValid)
             {

@@ -6,16 +6,10 @@ using CinemaInfrastructure.ViewModel;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
 builder.Services.AddControllersWithViews();
 
-builder.Services.AddDbContext<CinemaContext>(option => option.UseSqlServer(
-    builder.Configuration.GetConnectionString("DefaultConnection")
-));
-
-builder.Services.AddDbContext<IdentityContext>(option => option.UseSqlServer(
-    builder.Configuration.GetConnectionString("IdentityConnection")
-));
+builder.Services.AddDbContext<CinemaContext>(options =>
+    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 builder.Services.AddIdentity<User, IdentityRole>(options =>
 {
@@ -28,17 +22,17 @@ builder.Services.AddIdentity<User, IdentityRole>(options =>
     options.SignIn.RequireConfirmedPhoneNumber = false;
     options.Lockout.AllowedForNewUsers = false;
 })
-.AddEntityFrameworkStores<IdentityContext>();
+.AddEntityFrameworkStores<CinemaContext>()
+.AddDefaultTokenProviders();
 
 var app = builder.Build();
 
-// ВАЖЛИВО: створення ролей та користувача
 using (var scope = app.Services.CreateScope())
 {
     var services = scope.ServiceProvider;
 
-    var identityContext = services.GetRequiredService<IdentityContext>();
-    identityContext.Database.Migrate();
+    var dbContext = services.GetRequiredService<CinemaContext>();
+    dbContext.Database.Migrate();
 
     var userManager = services.GetRequiredService<UserManager<User>>();
     var roleManager = services.GetRequiredService<RoleManager<IdentityRole>>();
@@ -46,7 +40,6 @@ using (var scope = app.Services.CreateScope())
     await RoleInitializer.InitializeAsync(userManager, roleManager);
 }
 
-// Middleware pipeline
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Home/Error");
@@ -57,10 +50,11 @@ app.UseHttpsRedirection();
 app.UseRouting();
 app.UseAuthentication();
 app.UseAuthorization();
+
 app.MapStaticAssets();
 
 app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}");
 
-await app.RunAsync(); // ось тут async
+await app.RunAsync();

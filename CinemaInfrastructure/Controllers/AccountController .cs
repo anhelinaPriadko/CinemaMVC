@@ -10,11 +10,14 @@ namespace CinemaInfrastructure.Controllers
 
         private readonly UserManager<User> _userManager;
         private readonly SignInManager<User> _signInManager;
+        private readonly CinemaContext _context;
 
-        public AccountController(UserManager<User> userManager, SignInManager<User> signInManager)
+        public AccountController
+            (UserManager<User> userManager, SignInManager<User> signInManager, CinemaContext context)
         {
             _userManager = userManager;
             _signInManager = signInManager;
+            _context = context;
         }
 
         [HttpGet]
@@ -28,11 +31,21 @@ namespace CinemaInfrastructure.Controllers
         {
             if (ModelState.IsValid)
             {
-                User user = new User { Email = model.Email, UserName = model.Email, Year = model.Year };
+                User user = new User 
+                    { Email = model.Email, UserName = model.Email, Year = model.DateOfBirth.Year };
                 var result = await _userManager.CreateAsync(user, model.Password);
                 if (result.Succeeded)
                 {
-                    // Призначення ролі "user" для новозареєстрованого користувача
+                    var viewer = new Viewer
+                    {
+                        Name = model.Name,
+                        DateOfBirth = model.DateOfBirth,
+                        UserId = user.Id
+                    };
+
+                    _context.Viewers.Add(viewer);
+                    await _context.SaveChangesAsync();
+
                     await _userManager.AddToRoleAsync(user, "user");
 
                     await _signInManager.SignInAsync(user, false);

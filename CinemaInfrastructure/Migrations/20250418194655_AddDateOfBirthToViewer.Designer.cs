@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace CinemaInfrastructure.Migrations
 {
     [DbContext(typeof(CinemaContext))]
-    [Migration("20250225075639_AddNameMaxLengthToFilm")]
-    partial class AddNameMaxLengthToFilm
+    [Migration("20250418194655_AddDateOfBirthToViewer")]
+    partial class AddDateOfBirthToViewer
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -36,8 +36,7 @@ namespace CinemaInfrastructure.Migrations
                     b.Property<int>("SeatId")
                         .HasColumnType("int");
 
-                    b.HasKey("ViewerId", "SessionId", "SeatId")
-                        .HasName("PK__Bookings__830B0B77C94AE9A3");
+                    b.HasKey("ViewerId", "SessionId", "SeatId");
 
                     b.HasIndex("SeatId");
 
@@ -59,8 +58,7 @@ namespace CinemaInfrastructure.Migrations
                         .HasMaxLength(30)
                         .HasColumnType("nvarchar(30)");
 
-                    b.HasKey("Id")
-                        .HasName("PK__Companie__3214EC079CF8D54F");
+                    b.HasKey("Id");
 
                     b.ToTable("Companies");
                 });
@@ -88,11 +86,15 @@ namespace CinemaInfrastructure.Migrations
                         .HasMaxLength(40)
                         .HasColumnType("nvarchar(40)");
 
+                    b.Property<string>("PosterPath")
+                        .HasMaxLength(255)
+                        .IsUnicode(true)
+                        .HasColumnType("nvarchar(255)");
+
                     b.Property<DateOnly>("ReleaseDate")
                         .HasColumnType("date");
 
-                    b.HasKey("Id")
-                        .HasName("PK__Films__6D1D217CEFCE6AF1");
+                    b.HasKey("Id");
 
                     b.HasIndex("CompanyId");
 
@@ -114,8 +116,7 @@ namespace CinemaInfrastructure.Migrations
                         .HasMaxLength(30)
                         .HasColumnType("nvarchar(30)");
 
-                    b.HasKey("Id")
-                        .HasName("PK__FilmCate__3214EC07A5C8E37D");
+                    b.HasKey("Id");
 
                     b.ToTable("FilmCategories");
                 });
@@ -131,14 +132,13 @@ namespace CinemaInfrastructure.Migrations
                     b.Property<int>("FilmId")
                         .HasColumnType("int");
 
-                    b.Property<int?>("Rating")
+                    b.Property<int>("Rating")
                         .HasColumnType("int");
 
                     b.Property<int>("ViewerId")
                         .HasColumnType("int");
 
-                    b.HasKey("Id")
-                        .HasName("PK__FilmRati__3214EC074471E3C0");
+                    b.HasKey("Id");
 
                     b.HasIndex("FilmId");
 
@@ -169,8 +169,7 @@ namespace CinemaInfrastructure.Migrations
                     b.Property<int>("SeatsInRow")
                         .HasColumnType("int");
 
-                    b.HasKey("Id")
-                        .HasName("PK__Halls__7E60E21401F712B2");
+                    b.HasKey("Id");
 
                     b.HasIndex("HallTypeId");
 
@@ -190,8 +189,7 @@ namespace CinemaInfrastructure.Migrations
                         .HasMaxLength(30)
                         .HasColumnType("nvarchar(30)");
 
-                    b.HasKey("Id")
-                        .HasName("PK__HallType__3214EC076C98486F");
+                    b.HasKey("Id");
 
                     b.ToTable("HallTypes");
                 });
@@ -213,8 +211,7 @@ namespace CinemaInfrastructure.Migrations
                     b.Property<int>("Row")
                         .HasColumnType("int");
 
-                    b.HasKey("Id")
-                        .HasName("PK__Seats__311713F3F7CEAC58");
+                    b.HasKey("Id");
 
                     b.HasIndex("HallId");
 
@@ -241,14 +238,81 @@ namespace CinemaInfrastructure.Migrations
                     b.Property<DateTime>("SessionTime")
                         .HasColumnType("datetime");
 
-                    b.HasKey("Id")
-                        .HasName("PK__Sessions__C9F49290B2B6A8E6");
+                    b.HasKey("Id");
 
                     b.HasIndex("FilmId");
 
                     b.HasIndex("HallId");
 
                     b.ToTable("Sessions");
+                });
+
+            modelBuilder.Entity("CinemaDomain.Model.User", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<int>("AccessFailedCount")
+                        .HasColumnType("int");
+
+                    b.Property<string>("ConcurrencyStamp")
+                        .IsConcurrencyToken()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Email")
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)");
+
+                    b.Property<bool>("EmailConfirmed")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("LockoutEnabled")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTimeOffset?>("LockoutEnd")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<string>("NormalizedEmail")
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)");
+
+                    b.Property<string>("NormalizedUserName")
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)");
+
+                    b.Property<string>("PasswordHash")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("PhoneNumber")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("PhoneNumberConfirmed")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("SecurityStamp")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("TwoFactorEnabled")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("UserName")
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)");
+
+                    b.Property<int>("Year")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("NormalizedEmail")
+                        .HasDatabaseName("EmailIndex");
+
+                    b.HasIndex("NormalizedUserName")
+                        .IsUnique()
+                        .HasDatabaseName("UserNameIndex")
+                        .HasFilter("[NormalizedUserName] IS NOT NULL");
+
+                    b.ToTable("AspNetUsers", (string)null);
                 });
 
             modelBuilder.Entity("CinemaDomain.Model.Viewer", b =>
@@ -267,10 +331,142 @@ namespace CinemaInfrastructure.Migrations
                         .HasMaxLength(30)
                         .HasColumnType("nvarchar(30)");
 
-                    b.HasKey("Id")
-                        .HasName("PK__Viewers__3214EC0789042893");
+                    b.HasKey("Id");
 
                     b.ToTable("Viewers");
+                });
+
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("ConcurrencyStamp")
+                        .IsConcurrencyToken()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Name")
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)");
+
+                    b.Property<string>("NormalizedName")
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("NormalizedName")
+                        .IsUnique()
+                        .HasDatabaseName("RoleNameIndex")
+                        .HasFilter("[NormalizedName] IS NOT NULL");
+
+                    b.ToTable("AspNetRoles", (string)null);
+                });
+
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("ClaimType")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ClaimValue")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("RoleId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("RoleId");
+
+                    b.ToTable("AspNetRoleClaims", (string)null);
+                });
+
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserClaim<string>", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("ClaimType")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ClaimValue")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("AspNetUserClaims", (string)null);
+                });
+
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserLogin<string>", b =>
+                {
+                    b.Property<string>("LoginProvider")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("ProviderKey")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("ProviderDisplayName")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("LoginProvider", "ProviderKey");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("AspNetUserLogins", (string)null);
+                });
+
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserRole<string>", b =>
+                {
+                    b.Property<string>("UserId")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("RoleId")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("UserId", "RoleId");
+
+                    b.HasIndex("RoleId");
+
+                    b.ToTable("AspNetUserRoles", (string)null);
+                });
+
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserToken<string>", b =>
+                {
+                    b.Property<string>("UserId")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("LoginProvider")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("Name")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("Value")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("UserId", "LoginProvider", "Name");
+
+                    b.ToTable("AspNetUserTokens", (string)null);
                 });
 
             modelBuilder.Entity("CinemaDomain.Model.Booking", b =>
@@ -278,20 +474,17 @@ namespace CinemaInfrastructure.Migrations
                     b.HasOne("CinemaDomain.Model.Seat", "Seat")
                         .WithMany("Bookings")
                         .HasForeignKey("SeatId")
-                        .IsRequired()
-                        .HasConstraintName("FK__Bookings__SeatId__5BE2A6F2");
+                        .IsRequired();
 
                     b.HasOne("CinemaDomain.Model.Session", "Session")
                         .WithMany("Bookings")
                         .HasForeignKey("SessionId")
-                        .IsRequired()
-                        .HasConstraintName("FK__Bookings__Sessio__5AEE82B9");
+                        .IsRequired();
 
                     b.HasOne("CinemaDomain.Model.Viewer", "Viewer")
                         .WithMany("Bookings")
                         .HasForeignKey("ViewerId")
-                        .IsRequired()
-                        .HasConstraintName("FK__Bookings__Viewer__59FA5E80");
+                        .IsRequired();
 
                     b.Navigation("Seat");
 
@@ -305,14 +498,12 @@ namespace CinemaInfrastructure.Migrations
                     b.HasOne("CinemaDomain.Model.Company", "Company")
                         .WithMany("Films")
                         .HasForeignKey("CompanyId")
-                        .IsRequired()
-                        .HasConstraintName("FK__Films__CompanyId__403A8C7D");
+                        .IsRequired();
 
                     b.HasOne("CinemaDomain.Model.FilmCategory", "FilmCategory")
                         .WithMany("Films")
                         .HasForeignKey("FilmCategoryId")
-                        .IsRequired()
-                        .HasConstraintName("FK__Films__FilmCateg__412EB0B6");
+                        .IsRequired();
 
                     b.Navigation("Company");
 
@@ -324,14 +515,12 @@ namespace CinemaInfrastructure.Migrations
                     b.HasOne("CinemaDomain.Model.Film", "Film")
                         .WithMany("FilmRatings")
                         .HasForeignKey("FilmId")
-                        .IsRequired()
-                        .HasConstraintName("FK__FilmRatin__FilmI__48CFD27E");
+                        .IsRequired();
 
                     b.HasOne("CinemaDomain.Model.Viewer", "Viewer")
                         .WithMany("FilmRatings")
                         .HasForeignKey("ViewerId")
-                        .IsRequired()
-                        .HasConstraintName("FK__FilmRatin__Viewe__47DBAE45");
+                        .IsRequired();
 
                     b.Navigation("Film");
 
@@ -343,8 +532,7 @@ namespace CinemaInfrastructure.Migrations
                     b.HasOne("CinemaDomain.Model.HallType", "HallType")
                         .WithMany("Halls")
                         .HasForeignKey("HallTypeId")
-                        .IsRequired()
-                        .HasConstraintName("FK__Halls__HallTypeI__4D94879B");
+                        .IsRequired();
 
                     b.Navigation("HallType");
                 });
@@ -354,8 +542,7 @@ namespace CinemaInfrastructure.Migrations
                     b.HasOne("CinemaDomain.Model.Hall", "Hall")
                         .WithMany("Seats")
                         .HasForeignKey("HallId")
-                        .IsRequired()
-                        .HasConstraintName("FK__Seats__HallId__5629CD9C");
+                        .IsRequired();
 
                     b.Navigation("Hall");
                 });
@@ -365,18 +552,67 @@ namespace CinemaInfrastructure.Migrations
                     b.HasOne("CinemaDomain.Model.Film", "Film")
                         .WithMany("Sessions")
                         .HasForeignKey("FilmId")
-                        .IsRequired()
-                        .HasConstraintName("FK__Sessions__FilmId__5070F446");
+                        .IsRequired();
 
                     b.HasOne("CinemaDomain.Model.Hall", "Hall")
                         .WithMany("Sessions")
                         .HasForeignKey("HallId")
-                        .IsRequired()
-                        .HasConstraintName("FK__Sessions__HallId__5165187F");
+                        .IsRequired();
 
                     b.Navigation("Film");
 
                     b.Navigation("Hall");
+                });
+
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
+                {
+                    b.HasOne("Microsoft.AspNetCore.Identity.IdentityRole", null)
+                        .WithMany()
+                        .HasForeignKey("RoleId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserClaim<string>", b =>
+                {
+                    b.HasOne("CinemaDomain.Model.User", null)
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserLogin<string>", b =>
+                {
+                    b.HasOne("CinemaDomain.Model.User", null)
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserRole<string>", b =>
+                {
+                    b.HasOne("Microsoft.AspNetCore.Identity.IdentityRole", null)
+                        .WithMany()
+                        .HasForeignKey("RoleId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("CinemaDomain.Model.User", null)
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserToken<string>", b =>
+                {
+                    b.HasOne("CinemaDomain.Model.User", null)
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("CinemaDomain.Model.Company", b =>

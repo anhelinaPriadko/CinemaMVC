@@ -4,6 +4,7 @@ using CinemaInfrastructure;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace CinemaInfrastructure.Migrations
 {
     [DbContext(typeof(CinemaContext))]
-    partial class CinemaContextModelSnapshot : ModelSnapshot
+    [Migration("20250418181455_InitialCreate")]
+    partial class InitialCreate
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -328,14 +331,7 @@ namespace CinemaInfrastructure.Migrations
                         .HasMaxLength(30)
                         .HasColumnType("nvarchar(30)");
 
-                    b.Property<string>("UserId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(450)");
-
                     b.HasKey("Id");
-
-                    b.HasIndex("UserId")
-                        .IsUnique();
 
                     b.ToTable("Viewers");
                 });
@@ -568,16 +564,6 @@ namespace CinemaInfrastructure.Migrations
                     b.Navigation("Hall");
                 });
 
-            modelBuilder.Entity("CinemaDomain.Model.Viewer", b =>
-                {
-                    b.HasOne("CinemaDomain.Model.User", "User")
-                        .WithOne("Viewer")
-                        .HasForeignKey("CinemaDomain.Model.Viewer", "UserId")
-                        .IsRequired();
-
-                    b.Navigation("User");
-                });
-
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
                 {
                     b.HasOne("Microsoft.AspNetCore.Identity.IdentityRole", null)
@@ -666,12 +652,6 @@ namespace CinemaInfrastructure.Migrations
             modelBuilder.Entity("CinemaDomain.Model.Session", b =>
                 {
                     b.Navigation("Bookings");
-                });
-
-            modelBuilder.Entity("CinemaDomain.Model.User", b =>
-                {
-                    b.Navigation("Viewer")
-                        .IsRequired();
                 });
 
             modelBuilder.Entity("CinemaDomain.Model.Viewer", b =>
