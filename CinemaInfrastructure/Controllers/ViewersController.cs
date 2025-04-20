@@ -23,7 +23,11 @@ namespace CinemaInfrastructure.Controllers
         // GET: Viewers
         public async Task<IActionResult> Index()
         {
-            return View(await _context.Viewers.ToListAsync());
+            var viewers = await _context.Viewers
+                .Include(v => v.User) // підвантажуємо зв'язану таблицю
+                .ToListAsync();
+
+            return View(viewers);
         }
 
         // GET: Viewers/Details/5
@@ -35,6 +39,7 @@ namespace CinemaInfrastructure.Controllers
             }
 
             var viewer = await _context.Viewers
+                .Include(v => v.User)
                 .FirstOrDefaultAsync(m => m.Id == id);
             if (viewer == null)
             {
@@ -127,11 +132,15 @@ namespace CinemaInfrastructure.Controllers
                 return NotFound();
             }
 
-            var viewer = await _context.Viewers.FindAsync(id);
+            var viewer = await _context.Viewers.Include(v => v.User)
+                                               .FirstOrDefaultAsync(v => v.Id == id);
             if (viewer == null)
             {
                 return NotFound();
             }
+
+            ViewData["UserId"] = new SelectList(_context.Users, "Id", "Email", viewer.UserId);
+
             return View(viewer);
         }
 
@@ -140,7 +149,7 @@ namespace CinemaInfrastructure.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Name,DateOfBirth,Id")] Viewer viewer)
+        public async Task<IActionResult> Edit(int id, [Bind("Name,Id")] Viewer viewer)
         {
             if (id != viewer.Id)
             {
@@ -149,22 +158,28 @@ namespace CinemaInfrastructure.Controllers
 
             var existingViewer = await _context.Viewers.FindAsync(id);
             if (existingViewer == null)
+            {
                 return NotFound();
+            }
 
-            
-            if (checkDuplication(viewer.Name) && viewer.Name != existingViewer.Name)
-                ModelState.AddModelError("Name", "Користувач з таким ім'ям вже існує!");
+            var existingUser = await _context.Users.FindAsync(existingViewer.UserId);
+            if (existingUser == null)
+            {
+                return NotFound();
+            }
 
+            existingViewer.User = existingUser;
 
-            if (!checkAge(viewer.DateOfBirth, 18))
-                ModelState.AddModelError("DateOfBirth", "Мінімальний вік користувача має бути 18 років!");
+            ModelState.Clear();
+            TryValidateModel(existingViewer);
 
             if (ModelState.IsValid)
             {
                 try
                 {
                     existingViewer.Name = viewer.Name;
-                    existingViewer.DateOfBirth = viewer.DateOfBirth;
+                    viewer.User = existingUser;
+                    viewer.DateOfBirth = existingViewer.DateOfBirth;
                     _context.Update(existingViewer);
                     await _context.SaveChangesAsync();
                 }
@@ -181,6 +196,8 @@ namespace CinemaInfrastructure.Controllers
                 }
                 return RedirectToAction(nameof(Index));
             }
+
+            ViewData["UserId"] = new SelectList(_context.Users, "Id", "Email", viewer.UserId);
             return View(viewer);
         }
 

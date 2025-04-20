@@ -9,8 +9,8 @@
 <table class="table">
     <thead>
         <tr>
+            <th>Електронна адреса</th>
             <th>Ім'я</th>
-            <th>Дата народження</th>
             <th>Дії</th>
         </tr>
     </thead>
@@ -18,10 +18,10 @@
 @foreach (var item in Model) {
         <tr>
             <td>
-                @Html.DisplayFor(modelItem => item.Name)
+                @Html.DisplayFor(modelItem => item.User.Email)
             </td>
             <td>
-                @Html.DisplayFor(modelItem => item.DateOfBirth)
+                @Html.DisplayFor(modelItem => item.Name)
             </td>
             <td>
                 <a class="btn btn-warning btn-sm" asp-action="Edit" asp-route-id="@item.Id">Редагувати</a>

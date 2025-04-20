@@ -13,14 +13,17 @@
         <form asp-action="Edit">
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
             <div class="form-group">
-                <label asp-for="Name" class="control-label">Назва</label>
+                <label class="control-label">Електронна адреса</label>
+                <input class="form-control" value="@Model.User.Email" readonly />
+            </div>
+            <div class="form-group">
+                <label asp-for="Name" class="control-label">Ім'я</label>
                 <input asp-for="Name" class="form-control" />
                 <span asp-validation-for="Name" class="text-danger"></span>
             </div>
             <div class="form-group">
                 <label asp-for="DateOfBirth" class="control-label">Дата народження</label>
-                <input asp-for="DateOfBirth" class="form-control" />
-                <span asp-validation-for="DateOfBirth" class="text-danger"></span>
+                <input asp-for="DateOfBirth" class="form-control" readonly />
             </div>
             <input type="hidden" asp-for="Id" />
             <div class="form-group">
