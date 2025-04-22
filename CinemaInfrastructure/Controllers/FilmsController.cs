@@ -10,6 +10,7 @@ using CinemaInfrastructure;
 using System.Runtime.InteropServices;
 using Microsoft.VisualBasic;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
+using CinemaInfrastructure.Services;
 
 namespace CinemaInfrastructure.Controllers
 {
@@ -18,11 +19,74 @@ namespace CinemaInfrastructure.Controllers
     public class FilmsController : Controller
     {
         private readonly CinemaContext _context;
+        private readonly IImportService<Film> _importService;
+        private readonly IExportService<Film> _filmExportService;
 
-        public FilmsController(CinemaContext context)
+        public FilmsController
+            (CinemaContext context, IImportService<Film> importService, IExportService<Film> filmExportService)
         {
             _context = context;
+            _importService = importService;
+            _filmExportService = filmExportService;
         }
+
+        // GET: /Films/Export
+        [HttpGet]
+        public IActionResult Export()
+        {
+            // Повертає форму з кнопкою
+            return View();
+        }
+
+        // GET: /Films/ExportFile
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Export(CancellationToken cancellationToken)
+        {
+            await using var ms = new MemoryStream();
+            await _filmExportService.WriteToAsync(ms, cancellationToken);
+            ms.Seek(0, SeekOrigin.Begin);
+
+            string fileName = $"films_{DateTime.UtcNow:yyyyMMdd}.xlsx";
+            const string contentType =
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
+
+            // Повертаємо файл клієнту
+            return File(ms.ToArray(), contentType, fileName);
+        }
+
+
+
+        [HttpGet]
+        public IActionResult Import()
+        {
+            return View();
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> Import(IFormFile fileExcel)
+        {
+            if (fileExcel == null || fileExcel.Length == 0)
+            {
+                ModelState.AddModelError("", "Будь ласка, оберіть файл для імпорту.");
+                return View();
+            }
+
+            using var stream = fileExcel.OpenReadStream();
+            try
+            {
+                var importService = new CategoryFilmCompanyImportService(_context);
+                await importService.ImportFromStreamAsync(stream);
+                TempData["Success"] = "Імпорт завершено успішно.";
+            }
+            catch (Exception ex)
+            {
+                TempData["Error"] = $"Помилка під час імпорту: {ex.Message}";
+            }
+
+            return RedirectToAction("Index");
+        }
+
 
         // GET: Films
         public async Task<IActionResult> Index()

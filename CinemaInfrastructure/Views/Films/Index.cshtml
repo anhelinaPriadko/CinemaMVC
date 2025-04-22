@@ -11,11 +11,13 @@
 
 <h1>Фільми</h1>
 
-@if(User.IsInRole("superadmin"))
+@if (User.IsInRole("superadmin"))
 {
-    <p>
+    <div class="mb-4 d-flex gap-2">
         <a class="btn btn-primary" asp-action="Create">Створити новий</a>
-    </p>
+        <a class="btn btn-secondary" asp-controller="Films" asp-action="Import">Імпорт фільмів</a>
+        <a class="btn btn-success" asp-controller="Films" asp-action="Export">Експорт фільмів</a>
+    </div>
 }
 
 <div class="row">
@@ -27,7 +29,7 @@
                     <div class="mb-2">
                         @if (!string.IsNullOrEmpty(item.PosterPath))
                         {
-                            <img src="@Url.Content(item.PosterPath)" class="img-fluid rounded" alt="@item.Name" style="max-height: 350px;">
+                            <img src="@Url.Content(item.PosterPath)" class="img-fluid rounded" alt="@item.Name" style="max-height: 350px;" />
                         }
                         else
                         {
@@ -36,14 +38,15 @@
                     </div>
                     <h5 class="card-title">@item.Name</h5>
                     <div class="d-flex justify-content-center gap-2 mt-2">
-                        @if(User.IsInRole("superadmin"))
+                        @if (User.IsInRole("superadmin"))
                         {
                             <a class="btn btn-warning btn-sm" asp-action="Edit" asp-route-id="@item.Id">Редагувати</a>
                         }
                         <a class="btn btn-info btn-sm" asp-action="Details" asp-route-id="@item.Id">Деталі</a>
                         @if (User.IsInRole("superadmin"))
                         {
-                            <button class="btn btn-danger btn-sm" onclick="confirmDelete('@Url.Action("Delete", "Films", new { id = item.Id })', '@item.Name', 'фільм')">
+                            <button type="button" class="btn btn-danger btn-sm"
+                                    onclick="confirmDelete('@Url.Action("Delete", "Films", new { id = item.Id })', '@item.Name', 'фільм')">
                                 Видалити
                             </button>
                         }
@@ -54,3 +57,12 @@
     }
 </div>
 
+@section Scripts {
+    <script>
+        function confirmDelete(url, name, entity) {
+            if (confirm(`Ви впевнені, що хочете видалити ${entity} «${name}»?`)) {
+                window.location.href = url;
+            }
+        }
+    </script>
+}

@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Identity;
 using CinemaDomain.Model;
 using CinemaInfrastructure.ViewModel;
+using CinemaInfrastructure.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -24,6 +25,9 @@ builder.Services.AddIdentity<User, IdentityRole>(options =>
 })
 .AddEntityFrameworkStores<CinemaContext>()
 .AddDefaultTokenProviders();
+
+builder.Services.AddScoped<IImportService<Film>, CategoryFilmCompanyImportService>();
+builder.Services.AddScoped<IExportService<Film>, FilmExportService>();
 
 var app = builder.Build();
 
@@ -47,6 +51,7 @@ if (!app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+app.UseStaticFiles();
 app.UseRouting();
 app.UseAuthentication();
 app.UseAuthorization();
