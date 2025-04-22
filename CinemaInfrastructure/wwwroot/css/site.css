@@ -56,3 +56,13 @@ body {
     display: inline-block;
     border-radius: 8px;
 }
+
+.container .col-md-3 {
+    border-right: 1px solid #ccc; /* Легка лінія для відокремлення */
+    padding-right: 20px;
+}
+
+/* Приклад стилів для лівої колонки */
+.container .row {
+    margin-top: 10px;
+}

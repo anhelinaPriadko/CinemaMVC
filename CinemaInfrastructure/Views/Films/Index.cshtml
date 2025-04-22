@@ -11,9 +11,12 @@
 
 <h1>Фільми</h1>
 
-<p>
-    <a class="btn btn-primary" asp-action="Create">Створити новий</a>
-</p>
+@if(User.IsInRole("superadmin"))
+{
+    <p>
+        <a class="btn btn-primary" asp-action="Create">Створити новий</a>
+    </p>
+}
 
 <div class="row">
     @foreach (var item in Model)
@@ -33,11 +36,17 @@
                     </div>
                     <h5 class="card-title">@item.Name</h5>
                     <div class="d-flex justify-content-center gap-2 mt-2">
-                        <a class="btn btn-warning btn-sm" asp-action="Edit" asp-route-id="@item.Id">Редагувати</a>
+                        @if(User.IsInRole("superadmin"))
+                        {
+                            <a class="btn btn-warning btn-sm" asp-action="Edit" asp-route-id="@item.Id">Редагувати</a>
+                        }
                         <a class="btn btn-info btn-sm" asp-action="Details" asp-route-id="@item.Id">Деталі</a>
-                        <button class="btn btn-danger btn-sm" onclick="confirmDelete('@Url.Action("Delete", "Films", new { id = item.Id })', '@item.Name', 'фільм')">
-                            Видалити
-                        </button>
+                        @if (User.IsInRole("superadmin"))
+                        {
+                            <button class="btn btn-danger btn-sm" onclick="confirmDelete('@Url.Action("Delete", "Films", new { id = item.Id })', '@item.Name', 'фільм')">
+                                Видалити
+                            </button>
+                        }
                     </div>
                 </div>
             </div>

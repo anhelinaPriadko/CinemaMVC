@@ -29,6 +29,9 @@
     </dl>
 </div>
 <div>
-    <a class="btn btn-warning btn-sm" asp-action="Edit" asp-route-id="@Model.Id">Редагувати</a>
+    @if(User.IsInRole("superadmin"))
+    {
+        <a class="btn btn-warning btn-sm" asp-action="Edit" asp-route-id="@Model.Id">Редагувати</a>
+    }
     <a asp-action="Index">Назад</a>
 </div>

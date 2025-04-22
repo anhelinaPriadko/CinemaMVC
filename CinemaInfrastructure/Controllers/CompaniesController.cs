@@ -7,9 +7,11 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using CinemaDomain.Model;
 using CinemaInfrastructure;
+using Microsoft.AspNetCore.Authorization;
 
 namespace CinemaInfrastructure.Controllers
 {
+    [Authorize(Roles= "superadmin")]
     public class CompaniesController : Controller
     {
         private readonly CinemaContext _context;

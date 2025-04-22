@@ -7,22 +7,25 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using CinemaDomain.Model;
 using CinemaInfrastructure;
+using Microsoft.AspNetCore.Identity;
 
 namespace CinemaInfrastructure.Controllers
 {
     public class BookingsController : Controller
     {
         private readonly CinemaContext _context;
+        private readonly UserManager<User> _userManager;
 
-        public BookingsController(CinemaContext context)
+        public BookingsController(CinemaContext context, UserManager<User> userManager)
         {
             _context = context;
+            _userManager = userManager;
         }
 
         // GET: Bookings
         public async Task<IActionResult> Index()
         {
-            var cinemaContext = _context.Bookings.Include(b => b.Seat)
+            IQueryable<Booking> bookingsQuery = _context.Bookings.Include(b => b.Seat)
                 .Include(b => b.Seat)
                     .ThenInclude(s => s.Hall)
                         .ThenInclude(h => h.HallType)
@@ -33,7 +36,15 @@ namespace CinemaInfrastructure.Controllers
                     .ThenInclude(s => s.Film)
                         .ThenInclude(f => f.FilmCategory)
                 .Include(b => b.Viewer);
-            return View(await cinemaContext.ToListAsync());
+
+            if(User.IsInRole("user"))
+            {
+                var currentUserId = _userManager.GetUserId(User); // отримуємо Id поточного користувача
+                bookingsQuery = bookingsQuery.Where(b => b.Viewer.UserId == currentUserId);
+            }
+
+            var bookings = await bookingsQuery.ToListAsync();
+            return View(bookings);
         }
 
         public async Task<IActionResult> IndexBySessions(int sessionId)
@@ -162,12 +173,29 @@ namespace CinemaInfrastructure.Controllers
         }
 
         // GET: Bookings/Create
-        public IActionResult Create()
+        public async Task<IActionResult> Create()
         {
-            var films = _context.Films.ToList();
-            var viewers = _context.Viewers.ToList();
+            // 1) Фільми
+            var films = await _context.Films.ToListAsync();
             ViewBag.Films = films;
-            ViewData["ViewerId"] = new SelectList(_context.Viewers, "Id", "Name", null);
+
+            // 2) Глядачі — різні для user / admin
+            if (User.IsInRole("user"))
+            {
+                var currentUserId = _userManager.GetUserId(User);
+                var myViewer = await _context.Viewers
+                    .Where(v => v.UserId == currentUserId)
+                    .ToListAsync();
+                ViewData["ViewerId"] = new SelectList(myViewer, "Id", "Name", myViewer.First().Id);
+                ViewBag.IsUser = true;
+            }
+            else
+            {
+                var allViewers = await _context.Viewers.ToListAsync();
+                ViewData["ViewerId"] = new SelectList(allViewers, "Id", "Name");
+                ViewBag.IsUser = false;
+            }
+
             return View();
         }
 
@@ -236,7 +264,9 @@ namespace CinemaInfrastructure.Controllers
         public async Task<IActionResult> Create([Bind("ViewerId,SessionId,SeatId")] Booking booking)
         {
             // Завантаження пов’язаних даних
-            booking.Viewer = await _context.Viewers.FirstOrDefaultAsync(v => v.Id == booking.ViewerId);
+            booking.Viewer = await _context.Viewers
+                .Include(v => v.User)
+                .FirstOrDefaultAsync(v => v.Id == booking.ViewerId);
             booking.Session = await _context.Sessions
                 .Include(s => s.Hall)
                 .Include(s => s.Film)

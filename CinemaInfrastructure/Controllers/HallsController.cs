@@ -10,9 +10,11 @@ using CinemaInfrastructure;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using System.Diagnostics;
 using Microsoft.VisualBasic;
+using Microsoft.AspNetCore.Authorization;
 
 namespace CinemaInfrastructure.Controllers
 {
+    [Authorize(Roles = "superadmin")]
     public class HallsController : Controller
     {
         private readonly CinemaContext _context;

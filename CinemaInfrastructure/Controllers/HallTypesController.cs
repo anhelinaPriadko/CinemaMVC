@@ -8,9 +8,11 @@ using Microsoft.EntityFrameworkCore;
 using CinemaDomain.Model;
 using CinemaInfrastructure;
 using static Microsoft.EntityFrameworkCore.DbLoggerCategory.Database;
+using Microsoft.AspNetCore.Authorization;
 
 namespace CinemaInfrastructure.Controllers
 {
+    [Authorize(Roles = "superadmin")]
     public class HallTypesController : Controller
     {
         private readonly CinemaContext _context;

@@ -2,20 +2,6 @@
     ViewData["Title"] = "Головна сторінка";
 }
 
-@if (User.Identity.IsAuthenticated)
-{
-    <p>@User.Identity.Name</p>
-
-    <form method="post" asp-controller="Account" asp-action="Logout">
-        <input type="submit" value="Вихід" />
-    </form>
-}
-else
-{
-    <a asp-controller="Account" asp-action="Login">Вхід</a>
-    <a asp-controller="Account" asp-action="Register">Реєстація</a>
-}
-
 <div class="text-center">
     <h1 class="display-3">DreamScreen</h1>
 </div>

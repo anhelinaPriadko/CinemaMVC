@@ -10,9 +10,11 @@ using CinemaInfrastructure;
 using static Microsoft.EntityFrameworkCore.DbLoggerCategory.Database;
 using Microsoft.VisualBasic;
 using Microsoft.EntityFrameworkCore.Query.SqlExpressions;
+using Microsoft.AspNetCore.Authorization;
 
 namespace CinemaInfrastructure.Controllers
 {
+    [Authorize(Roles = "superadmin")]
     public class FilmCategoriesController : Controller
     {
         private readonly CinemaContext _context;

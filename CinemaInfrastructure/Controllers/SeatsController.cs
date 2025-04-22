@@ -8,9 +8,11 @@ using Microsoft.EntityFrameworkCore;
 using CinemaDomain.Model;
 using CinemaInfrastructure;
 using Microsoft.VisualBasic;
+using Microsoft.AspNetCore.Authorization;
 
 namespace CinemaInfrastructure.Controllers
 {
+    [Authorize(Roles = "superadmin")]
     public class SeatsController : Controller
     {
         private readonly CinemaContext _context;
