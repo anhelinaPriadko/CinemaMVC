@@ -43,6 +43,21 @@
                             <a class="btn btn-warning btn-sm" asp-action="Edit" asp-route-id="@item.Id">Редагувати</a>
                         }
                         <a class="btn btn-info btn-sm" asp-action="Details" asp-route-id="@item.Id">Деталі</a>
+                        
+                        @if (User.Identity.IsAuthenticated)
+                        {
+                            <a asp-controller="Bookings"
+                               asp-action="Create"
+                               asp-route-FilmId="@item.Id"
+                               class="btn btn-primary">
+                                Забронювати
+                            </a>
+                        }
+                        else
+                        {
+                            <a asp-controller="Account" asp-action="Login"
+                               class="btn btn-sm btn-primary">Забронювати</a>
+                        }
                         @if (User.IsInRole("superadmin"))
                         {
                             <button type="button" class="btn btn-danger btn-sm"

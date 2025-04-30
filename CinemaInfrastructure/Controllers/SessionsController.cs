@@ -10,6 +10,14 @@ using CinemaInfrastructure;
 
 namespace CinemaInfrastructure.Controllers
 {
+    public enum SessionFilter
+    {
+        All,
+        Past,
+        Ongoing,
+        Upcoming
+    }
+
     public class SessionsController : Controller
     {
         private readonly CinemaContext _context;
@@ -20,59 +28,85 @@ namespace CinemaInfrastructure.Controllers
         }
 
         // GET: Sessions
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(SessionFilter filter = SessionFilter.Upcoming)
         {
-            var cinemaContext = _context.Sessions
-                .Include(s => s.Film)
-                .ThenInclude(f => f.Company)
-                .Include(s => s.Film)
-                .ThenInclude(f => f.FilmCategory)
-                .Include(s => s.Hall)
-                .ThenInclude(h => h.HallType);
+            IQueryable<Session> cinemaContext = _context.Sessions
+                    .Include(s => s.Film)
+                        .ThenInclude(f => f.Company)
+                    .Include(s => s.Film)
+                        .ThenInclude(f => f.FilmCategory)
+                    .Include(s => s.Hall)
+                        .ThenInclude(h => h.HallType);
+
+            cinemaContext = ApplySessionFilter(cinemaContext, filter)
+                .OrderByDescending(s => s.SessionTime);
+
+            ViewBag.SelectedFilter = filter;
             return View(await cinemaContext.ToListAsync());
         }
 
-        public async Task<IActionResult> IndexByHall(int hallId)
+        public async Task<IActionResult> IndexByHall(int hallId, SessionFilter filter = SessionFilter.Upcoming)
         {
             var hallExists = await _context.Halls.AnyAsync(h => h.Id == hallId);
             if (!hallExists)
                 return NotFound();
 
-            var sessions = await _context.Sessions.Where(s => s.HallId == hallId)
-                .Include(s => s.Film)
-                .ThenInclude(f => f.Company)
-                .Include(s => s.Film)
-                .ThenInclude(f => f.FilmCategory)
-                .Include(s => s.Hall)
-                .ThenInclude(h => h.HallType)
-                .ToListAsync();
+            IQueryable<Session> sessions = _context.Sessions
+                    .Include(s => s.Film)
+                        .ThenInclude(f => f.Company)
+                    .Include(s => s.Film)
+                        .ThenInclude(f => f.FilmCategory)
+                    .Include(s => s.Hall)
+                        .ThenInclude(h => h.HallType);
 
-            if(sessions.Count() == 0)
+            sessions = ApplySessionFilter(sessions, filter)
+                .OrderByDescending(s => s.SessionTime);
+
+            if (sessions.Count() == 0)
                 TempData["Message"] = "На жаль, в цьому залі ще немає сеансів(";
 
+            ViewBag.SelectedFilter = filter;
             return View("Index", sessions);
         }
 
-        public async Task<IActionResult> IndexByFilm(int filmId)
+        public async Task<IActionResult> IndexByFilm(int filmId, SessionFilter filter = SessionFilter.Upcoming)
         {
             var filmExists = await _context.Films.AnyAsync(f => f.Id == filmId);
             if (!filmExists)
                 return NotFound();
 
-            var sessions = await _context.Sessions.Where(s => s.FilmId == filmId)
-                .Include(s => s.Film)
-                .ThenInclude(f => f.Company)
-                .Include(s => s.Film)
-                .ThenInclude(f => f.FilmCategory)
-                .Include(s => s.Hall)
-                .ThenInclude(h => h.HallType)
-                .ToListAsync();
+            IQueryable<Session> sessions = _context.Sessions
+                    .Include(s => s.Film)
+                        .ThenInclude(f => f.Company)
+                    .Include(s => s.Film)
+                        .ThenInclude(f => f.FilmCategory)
+                    .Include(s => s.Hall)
+                        .ThenInclude(h => h.HallType);
+
+            sessions = ApplySessionFilter(sessions, filter)
+                .OrderByDescending(s => s.SessionTime);
 
             if (sessions.Count() == 0)
                 TempData["Message"] = "На жаль, для цього фільму ще немає сеансів(";
 
+            ViewBag.SelectedFilter = filter;
             return View("Index", sessions);
         }
+
+        private IQueryable<Session> ApplySessionFilter(IQueryable<Session> query, SessionFilter filter)
+        {
+            var now = DateTime.Now;
+
+            return filter switch
+            {
+                SessionFilter.Past => query.Where(s => s.SessionTime.AddMinutes(s.Duration) < now),
+                SessionFilter.Ongoing => query.Where(s => s.SessionTime <= now &&
+                                                           s.SessionTime.AddMinutes(s.Duration) >= now),
+                SessionFilter.Upcoming => query.Where(s => s.SessionTime > now),
+                _ => query
+            };
+        }
+
 
         // GET: Sessions/Details/5
         public async Task<IActionResult> Details(int? id)

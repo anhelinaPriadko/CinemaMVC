@@ -37,13 +37,14 @@ namespace CinemaInfrastructure.Controllers
                         .ThenInclude(f => f.FilmCategory)
                 .Include(b => b.Viewer);
 
-            if(User.IsInRole("user"))
+            if (User.IsInRole("user"))
             {
                 var currentUserId = _userManager.GetUserId(User); // отримуємо Id поточного користувача
                 bookingsQuery = bookingsQuery.Where(b => b.Viewer.UserId == currentUserId);
             }
 
-            var bookings = await bookingsQuery.ToListAsync();
+            var bookings = await bookingsQuery.OrderByDescending(b => b.Session.SessionTime)
+                                              .ToListAsync();
             return View(bookings);
         }
 
@@ -64,6 +65,7 @@ namespace CinemaInfrastructure.Controllers
                     .ThenInclude(s => s.Film)
                         .ThenInclude(f => f.FilmCategory)
                 .Include(b => b.Viewer)
+                .OrderByDescending(b => b.Session.SessionTime)
                 .ToListAsync();
 
             return View("Index", bookings);
@@ -86,6 +88,7 @@ namespace CinemaInfrastructure.Controllers
                     .ThenInclude(s => s.Film)
                         .ThenInclude(f => f.FilmCategory)
                 .Include(b => b.Viewer)
+                .OrderByDescending(b => b.Session.SessionTime)
                 .ToListAsync();
 
             if (bookings.Count() == 0)
@@ -173,11 +176,13 @@ namespace CinemaInfrastructure.Controllers
         }
 
         // GET: Bookings/Create
-        public async Task<IActionResult> Create()
+        public async Task<IActionResult> Create(int? FilmId, int? sessionId)
         {
             // 1) Фільми
             var films = await _context.Films.ToListAsync();
             ViewBag.Films = films;
+            ViewBag.SelectedFilmId = FilmId;
+            ViewBag.SelectedSessionId = sessionId;
 
             // 2) Глядачі — різні для user / admin
             if (User.IsInRole("user"))
@@ -202,11 +207,15 @@ namespace CinemaInfrastructure.Controllers
 
         public async Task<IActionResult> GetSessionsByFilm(int filmId)
         {
+            var now = DateTime.Now;
+
             var sessions = await _context.Sessions
-                .Where(s => s.Film.Id == filmId)
+                .Where(s => s.FilmId == filmId
+                            && s.SessionTime > now)
+                .OrderBy(s => s.SessionTime)
                 .Select(s => new {
-                    s.Id,
-                    Time = s.SessionTime.ToString("dd.MM.yyyy HH:mm")
+                    id = s.Id,
+                    time = s.SessionTime.ToString("dd.MM.yyyy HH:mm")
                 })
                 .ToListAsync();
             return Json(sessions);
@@ -435,7 +444,7 @@ namespace CinemaInfrastructure.Controllers
                     .Include(b => b.Viewer)
                     .Include(b => b.Session)
                     .Include(b => b.Session.Film)
-                    .FirstOrDefaultAsync(b => b.ViewerId == viewerId && 
+                    .FirstOrDefaultAsync(b => b.ViewerId == viewerId &&
                     b.SessionId == sessionId && b.SeatId == seatId);
 
             if (booking != null)
